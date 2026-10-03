@@ -12,8 +12,10 @@ function queryPath(path, values) {
   return `${path}${suffix ? `?${suffix}` : ''}`
 }
 
-export function getDailyPlans(profileId) {
-  return apiRequest(queryPath(DAILY_PLAN_PATH, { profile_id: profileId }))
+export function getDailyPlans(profileId, date) {
+  return apiRequest(queryPath(DAILY_PLAN_PATH, {
+    profile_id: profileId, start_date: date, end_date: date,
+  }))
 }
 
 export function getDailyPlan(id) {
@@ -32,8 +34,10 @@ export function deleteDailyPlan(id) {
   return apiRequest(`${DAILY_PLAN_PATH}${id}/`, { method: 'DELETE' })
 }
 
-export function getTrackingRecords(profileId) {
-  return apiRequest(queryPath(TRACKING_PATH, { profile_id: profileId }))
+export function getTrackingRecords(profileId, date) {
+  return apiRequest(queryPath(TRACKING_PATH, {
+    profile_id: profileId, start_date: date, end_date: date,
+  }))
 }
 
 export function createTrackingRecord(record) {

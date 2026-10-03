@@ -50,6 +50,9 @@ function BodyShapePage() {
       const response = await calculateBodyShape(
         Object.fromEntries(Object.entries(measurements).map(([key, value]) => [key, Number(value)])),
       )
+      if (!response || typeof response.estimated_body_shape !== 'string' || typeof response.styling_suggestion !== 'string') {
+        throw new Error('The server returned an unexpected result. Please try again.')
+      }
       setResult(response)
     } catch (error) {
       setRequestError(error.message)

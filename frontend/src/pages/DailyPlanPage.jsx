@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Button from '../components/Button.jsx'
 import Card from '../components/Card.jsx'
 import SectionHeader from '../components/SectionHeader.jsx'
+import { isValidISODate, localDateString } from '../utils/date.js'
 import {
   createDailyPlan,
   createTrackingRecord,
@@ -21,14 +22,10 @@ const completionFields = [
   ['daily_plan_completed', 'Daily plan'],
 ]
 const emptyPlan = { profile: '', plan_date: '', outfit: '', meal_plan: '', notes: '' }
-const localToday = () => {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-}
 
 function DailyPlanPage() {
   const [profileId, setProfileId] = useState('')
-  const [selectedDate, setSelectedDate] = useState(localToday)
+  const [selectedDate, setSelectedDate] = useState(localDateString)
   const [plan, setPlan] = useState(null)
   const [tracking, setTracking] = useState(null)
   const [summary, setSummary] = useState(null)
@@ -50,12 +47,17 @@ function DailyPlanPage() {
     setLoading(true); setError('')
     try {
       const [planResponse, trackingResponse, summaryResponse] = await Promise.all([
-        getDailyPlans(profileId),
-        getTrackingRecords(profileId),
+        getDailyPlans(profileId, selectedDate),
+        getTrackingRecords(profileId, selectedDate),
         getTrackingSummary(profileId, selectedDate),
       ])
-      const plans = Array.isArray(planResponse) ? planResponse : planResponse?.results || []
-      const records = Array.isArray(trackingResponse) ? trackingResponse : trackingResponse?.results || []
+      if (!Array.isArray(planResponse) || !Array.isArray(trackingResponse)
+        || !summaryResponse || typeof summaryResponse.completion_percentage !== 'number'
+        || !Array.isArray(summaryResponse.daily_progress) || !summaryResponse.progress_by_field) {
+        throw new Error('The server returned unexpected daily plan or tracking data. Please try again.')
+      }
+      const plans = planResponse
+      const records = trackingResponse
       setPlan(plans.find((item) => item.plan_date === selectedDate) || null)
       setTracking(records.find((item) => item.track_date === selectedDate) || null)
       setSummary(summaryResponse)
@@ -94,10 +96,10 @@ function DailyPlanPage() {
 
   const savePlan = async (event) => {
     event.preventDefault(); setFormError('')
-    if (!/^\d+$/.test(form.profile) || Number(form.profile) < 1) return setFormError('Enter a valid positive profile ID.')
-    if (!form.plan_date || Number.isNaN(Date.parse(`${form.plan_date}T00:00:00`))) return setFormError('Choose a valid plan date.')
+    if (!/^\d+$/.test(form.profile) || !Number.isSafeInteger(Number(form.profile)) || Number(form.profile) < 1) return setFormError('Enter a valid positive profile ID.')
+    if (!isValidISODate(form.plan_date)) return setFormError('Choose a valid plan date.')
     for (const field of ['outfit', 'meal_plan']) {
-      if (form[field] && (!/^\d+$/.test(form[field]) || Number(form[field]) < 1)) return setFormError(`Enter a valid positive ${field === 'outfit' ? 'outfit' : 'meal plan'} ID, or leave it blank.`)
+      if (form[field] && (!/^\d+$/.test(form[field]) || !Number.isSafeInteger(Number(form[field])) || Number(form[field]) < 1)) return setFormError(`Enter a valid positive ${field === 'outfit' ? 'outfit' : 'meal plan'} ID, or leave it blank.`)
     }
     const payload = {
       profile: Number(form.profile), plan_date: form.plan_date,

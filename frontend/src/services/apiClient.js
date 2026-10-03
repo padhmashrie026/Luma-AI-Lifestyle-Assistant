@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '')
 
 function getErrorMessage(data) {
   if (data && typeof data === 'object') {
@@ -30,6 +30,11 @@ export async function apiRequest(path, options = {}) {
 
   if (response.status === 204) return null
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(getErrorMessage(data))
+  if (!response.ok) {
+    const message = getErrorMessage(data)
+    throw new Error(message === 'The request could not be completed. Please try again.'
+      ? `The server returned an error (HTTP ${response.status}). Please try again.`
+      : message)
+  }
   return data
 }

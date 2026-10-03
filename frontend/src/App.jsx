@@ -41,7 +41,8 @@ function App() {
   }
 
   const page = pages[currentPath] ?? pages['/dashboard']
-  return <AppLayout title={page.title} currentPath={currentPath} onNavigate={navigate}>{page.component}</AppLayout>
+  const content = page === pages['/dashboard'] ? <Dashboard onNavigate={navigate} /> : page.component
+  return <AppLayout title={page.title} currentPath={currentPath} onNavigate={navigate}>{content}</AppLayout>
 }
 
 export default App

@@ -45,7 +45,7 @@ function OutfitRecommendationPage() {
     setRequestError('')
     const nextErrors = {}
     if (!profileId.trim()) nextErrors.profileId = 'Profile ID is required.'
-    else if (!/^\d+$/.test(profileId.trim()) || Number(profileId) < 1) nextErrors.profileId = 'Enter a valid positive profile ID.'
+    else if (!/^\d+$/.test(profileId.trim()) || !Number.isSafeInteger(Number(profileId)) || Number(profileId) < 1) nextErrors.profileId = 'Enter a valid positive profile ID.'
     if (!occasion) nextErrors.occasion = 'Choose an occasion.'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) return
@@ -54,7 +54,11 @@ function OutfitRecommendationPage() {
     if (bodyShape) request.body_shape = bodyShape
     setIsLoading(true)
     try {
-      setResult(await recommendOutfit(request))
+      const response = await recommendOutfit(request)
+      if (!response || typeof response.recommendation_available !== 'boolean' || typeof response.message !== 'string' || typeof response.explanation !== 'string') {
+        throw new Error('The server returned an unexpected recommendation. Please try again.')
+      }
+      setResult(response)
     } catch (error) {
       setRequestError(error.message)
     } finally {

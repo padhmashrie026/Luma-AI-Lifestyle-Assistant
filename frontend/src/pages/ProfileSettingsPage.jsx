@@ -12,6 +12,15 @@ function getSavedProfileId() {
   catch { return '' }
 }
 
+function isProfileResponse(value) {
+  return value && Number.isSafeInteger(value.id)
+    && ['username', 'first_name', 'last_name', 'email', 'display_name'].every((field) => typeof value[field] === 'string')
+}
+
+function isSettingsResponse(value) {
+  return value && Number.isSafeInteger(value.profile_id) && typeof value.currency_code === 'string'
+}
+
 function ProfileSettingsPage({ mode = 'profile' }) {
   const isSettings = mode === 'settings'
   const [profileId, setProfileId] = useState(getSavedProfileId)
@@ -29,13 +38,16 @@ function ProfileSettingsPage({ mode = 'profile' }) {
   const loadRecord = async (event) => {
     event?.preventDefault()
     setError(''); setFieldError(''); setNotice('')
-    if (!/^\d+$/.test(profileId) || Number(profileId) < 1) {
+    if (!/^\d+$/.test(profileId) || !Number.isSafeInteger(Number(profileId)) || Number(profileId) < 1) {
       setError('Enter a valid positive profile ID to continue.')
       return
     }
     setLoading(true)
     try {
       const data = isSettings ? await getSettings(profileId) : await getProfile(profileId)
+      if (isSettings ? !isSettingsResponse(data) : !isProfileResponse(data)) {
+        throw new Error(`The server returned unexpected ${isSettings ? 'settings' : 'profile'} data. Please try again.`)
+      }
       setRecord(data)
       if (isSettings) setCurrencyCode(data.currency_code || '')
       else setProfileForm({
@@ -64,6 +76,7 @@ function ProfileSettingsPage({ mode = 'profile' }) {
         email: profileForm.email,
         display_name: profileForm.display_name,
       })
+      if (!isProfileResponse(data)) throw new Error('The server returned unexpected profile data. Please try again.')
       setRecord(data)
       setProfileForm({
         username: data.username || '', first_name: data.first_name || '',
@@ -84,6 +97,7 @@ function ProfileSettingsPage({ mode = 'profile' }) {
     setSaving(true)
     try {
       const data = await updateSettings(profileId, { currency_code: currencyCode.trim() })
+      if (!isSettingsResponse(data)) throw new Error('The server returned unexpected settings data. Please try again.')
       setRecord(data); setCurrencyCode(data.currency_code || '')
       setNotice('Settings saved.')
     } catch (requestError) { setError(requestError.message) }

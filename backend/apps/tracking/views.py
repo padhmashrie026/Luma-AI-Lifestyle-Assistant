@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from rest_framework import generics, serializers
 from rest_framework.exceptions import ValidationError

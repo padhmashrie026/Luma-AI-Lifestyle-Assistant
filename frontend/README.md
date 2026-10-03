@@ -1,37 +1,34 @@
-# AI Lifestyle Assistant frontend
+﻿# AI Lifestyle Assistant frontend
 
-This React and Vite app contains the responsive layout and dashboard foundation for the AI Lifestyle Assistant. Dashboard examples are demo content; the feature modules are placeholders while they are being developed.
+React interface for the AI Lifestyle Assistant. The feature pages connect to the Django APIs through the shared client in `src/services/apiClient.js`; data and summaries come from backend responses rather than sample dashboard values.
 
 ## Run locally
 
-From this folder, install the existing project dependencies and start the development server:
+From this folder:
 
-```bash
-npm install
-npm run dev
+```powershell
+npm.cmd install
+npm.cmd run dev
 ```
 
-Vite prints a local URL in the terminal. Open it in a browser to use the app. Build the production files with:
+Vite prints the local URL, usually `http://localhost:5173`. Build production assets with:
 
-```bash
-npm run build
+```powershell
+npm.cmd run build
 ```
+
+During development, requests to `/api` are proxied to Django at `http://127.0.0.1:8000`. `VITE_API_BASE_URL` configures the API base URL, and `VITE_API_PROXY_TARGET` configures the development proxy target.
 
 ## Pages
 
-- `/dashboard`
-- `/body-shape`
-- `/wardrobe`
-- `/outfits`
-- `/diet`
-- `/expenses`
-- `/daily-plan`
-- `/insights`
-- `/profile`
-- `/settings`
+- `/dashboard` — links to implemented modules without sample personal activity.
+- `/body-shape` — approximate styling guidance.
+- `/wardrobe` — wardrobe item management.
+- `/outfits` — rule-based outfit suggestions.
+- `/diet` — weekly meal plan preview.
+- `/expenses` — expense records and API summaries.
+- `/daily-plan` — daily plans and tracking check-ins.
+- `/profile` and `/settings` — existing profile and currency preference APIs.
+- `/insights` — placeholder; no Insights API exists yet.
 
-The feature pages are intentionally informational placeholders at this stage, except for the Body Shape Calculator, Smart Wardrobe, Outfit Recommendation, and Diet Planner.
-
-## Django API connection
-
-The Body Shape Calculator sends measurements to `POST /api/body-shape/calculate/`. Smart Wardrobe uses the `/api/wardrobe/items/` collection and item detail URLs for CRUD operations. Outfit Recommendation sends `profile_id`, `occasion`, and an optional `body_shape` to `POST /api/outfits/recommend/`. Diet Planner sends `profile_id` and `week_start` to `POST /api/diet/plan/`. During local development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`; start Django with `python backend/manage.py runserver` from the project root. Set `VITE_API_BASE_URL` when the API is hosted at another base URL.
+The backend has no application authentication. Profile-based pages use an existing `profile_id` as a temporary development selector; this is not secure multi-user authorization. See the root README for backend setup and API details.

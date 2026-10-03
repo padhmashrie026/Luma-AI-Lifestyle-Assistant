@@ -38,7 +38,8 @@ function WardrobePage() {
     setListError('')
     try {
       const data = await getWardrobeItems(activeFilters)
-      setItems(Array.isArray(data) ? data : [])
+      if (!Array.isArray(data)) throw new Error('The server returned an unexpected wardrobe response. Please try again.')
+      setItems(data)
     } catch (error) {
       setListError(error.message)
     } finally {
@@ -96,7 +97,7 @@ function WardrobePage() {
   const validateForm = () => {
     const errors = {}
     if (!form.profile.trim()) errors.profile = 'Profile ID is required.'
-    else if (!/^\d+$/.test(form.profile.trim()) || Number(form.profile) < 1) errors.profile = 'Enter a valid positive profile ID.'
+    else if (!/^\d+$/.test(form.profile.trim()) || !Number.isSafeInteger(Number(form.profile)) || Number(form.profile) < 1) errors.profile = 'Enter a valid positive profile ID.'
     if (!form.name.trim()) errors.name = 'Item name is required.'
     if (!form.category) errors.category = 'Choose a category.'
     return errors

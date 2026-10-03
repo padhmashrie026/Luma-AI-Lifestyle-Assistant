@@ -60,6 +60,15 @@ class DailyTrackingApiTests(TestCase):
         self.assertEqual(updated.status_code, 200)
         self.assertTrue(updated.data["meals_completed"])
 
+    def test_list_filters_by_date_range(self):
+        self.client.post(self.url, self.payload(), format="json")
+        response = self.client.get(
+            self.url,
+            {"profile_id": self.profile.id, "start_date": "2026-10-03", "end_date": "2026-10-03"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
     def test_summary_counts_completed_pending_and_percentages(self):
         self.client.post(self.url, self.payload(), format="json")
         self.client.post(

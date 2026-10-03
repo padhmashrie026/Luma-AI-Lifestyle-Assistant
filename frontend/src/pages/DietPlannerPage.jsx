@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Button from '../components/Button.jsx'
 import Card from '../components/Card.jsx'
 import SectionHeader from '../components/SectionHeader.jsx'
+import { isValidISODate } from '../utils/date.js'
 import { generateWeeklyMealPlan } from '../services/dietService.js'
 
 const mealSlots = [
@@ -48,7 +49,7 @@ function DietPlannerPage() {
       nextErrors.profileId = 'Enter a valid positive profile ID.'
     }
     if (!weekStart) nextErrors.weekStart = 'Choose the first date of the week.'
-    else if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart) || Number.isNaN(new Date(`${weekStart}T00:00:00`).getTime()) || new Date(`${weekStart}T00:00:00`).toISOString().slice(0, 10) !== weekStart) {
+    else if (!isValidISODate(weekStart)) {
       nextErrors.weekStart = 'Enter a valid date.'
     }
     setErrors(nextErrors)
@@ -56,7 +57,11 @@ function DietPlannerPage() {
 
     setIsLoading(true)
     try {
-      setPlan(await generateWeeklyMealPlan({ profile_id: Number(profileId), week_start: weekStart }))
+      const response = await generateWeeklyMealPlan({ profile_id: Number(profileId), week_start: weekStart })
+      if (!response || typeof response.plan_available !== 'boolean' || !Array.isArray(response.weekly_plan) || !Array.isArray(response.grocery_list)) {
+        throw new Error('The server returned an unexpected meal plan. Please try again.')
+      }
+      setPlan(response)
     } catch (error) {
       setRequestError(error.message)
     } finally {
