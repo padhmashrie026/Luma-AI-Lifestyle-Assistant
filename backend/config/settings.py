@@ -15,6 +15,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "apps.wardrobe.apps.WardrobeConfig",
+    "apps.body_shape.apps.BodyShapeConfig",
+    "apps.outfits.apps.OutfitsConfig",
+    "apps.diet.apps.DietConfig",
+    "apps.expenses.apps.ExpensesConfig",
+    "apps.lifestyle.apps.LifestyleConfig",
+    "apps.tracking.apps.TrackingConfig",
 ]
 
 MIDDLEWARE = [
