@@ -221,13 +221,85 @@
 .missing-items li { border-radius: 6px; background: #eaf1eb; padding: 5px 8px; color: #4c6953; font-size: 10px; text-transform: capitalize; }
 .outfit-explanation { margin-top: 14px !important; }
 
+.diet-welcome { margin-bottom: 22px; }
+.diet-request-card { margin-bottom: 24px; padding: 21px; }
+.diet-request-card .section-header { margin-bottom: 18px; }
+.diet-request-form { display: grid; grid-template-columns: minmax(180px, .8fr) minmax(180px, .8fr) auto; align-items: end; gap: 14px; }
+.diet-field label { display: block; margin-bottom: 7px; color: #46534a; font-size: 11px; font-weight: 700; }
+.diet-field label span { margin-left: 4px; color: #8b968e; font-size: 9px; font-weight: 500; }
+.diet-field input { width: 100%; min-height: 40px; border: 1px solid #dfe6e0; border-radius: 8px; background: white; padding: 8px 10px; color: var(--ink); font: inherit; font-size: 12px; }
+.diet-field input:focus { border-color: #7ba789; outline: 3px solid rgb(123 167 137 / 15%); }
+.diet-field [aria-invalid="true"] { border-color: #bd5b55; }
+.diet-field-error, .diet-field-help { display: block; margin-top: 5px; font-size: 10px; line-height: 1.5; }
+.diet-field-error { color: #a13e39; }
+.diet-field-help { color: #89948d; }
+.diet-request-actions { display: flex; gap: 8px; }
+.diet-request-actions .button { white-space: nowrap; }
+.diet-request-error { margin: 14px 0 0; border-radius: 8px; background: #fff2f0; padding: 10px 12px; color: #993c37; font-size: 12px; line-height: 1.5; }
+.diet-disclaimer { margin: 16px 0 0; color: #78847b; font-size: 10px; line-height: 1.6; }
+.diet-plan-section { display: grid; gap: 16px; }
+.diet-empty-state { display: grid; min-height: 235px; justify-items: center; align-content: center; padding: 24px; text-align: center; }
+.diet-empty-mark { display: grid; width: 45px; height: 45px; margin-bottom: 13px; place-items: center; border: 1px dashed #d7e0d8; border-radius: 13px; background: #f8faf8; color: #718b78; font-size: 20px; }
+.diet-empty-state h3 { margin: 0; color: #445148; font-size: 14px; }
+.diet-empty-state p { max-width: 360px; margin: 7px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.diet-unavailable-card { padding: 22px; }
+.diet-result-kicker { display: inline-flex; margin-bottom: 7px; color: #8b6e40; font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+.diet-unavailable-card h3 { margin: 0 0 7px; color: #4a4a3e; font-size: 16px; }
+.diet-unavailable-card > p, .diet-unavailable-budget > p { margin: 0; color: #747b70; font-size: 11px; line-height: 1.7; }
+.diet-missing-slots { margin-top: 15px; border-radius: 9px; background: #f6f6f0; padding: 11px 13px; }
+.diet-missing-slots > span { color: #5f6254; font-size: 10px; font-weight: 700; }
+.diet-missing-slots ul { display: flex; flex-wrap: wrap; gap: 7px; margin: 8px 0 0; padding: 0; list-style: none; }
+.diet-missing-slots li { border-radius: 6px; background: #ececdf; padding: 5px 8px; color: #64654f; font-size: 10px; text-transform: capitalize; }
+.diet-unavailable-budget { padding: 18px 21px; }
+.diet-plan-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.diet-plan-heading .eyebrow { margin-bottom: 5px; }
+.diet-plan-heading h3 { margin: 0; color: #2e4034; font-size: 20px; letter-spacing: -.4px; }
+.diet-preview-badge { display: inline-flex; border: 1px solid #e9e6da; border-radius: 999px; background: #fbfaf5; padding: 6px 9px; color: #786b42; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.diet-nutrition-note { margin: 0; border-left: 3px solid #d5e3d7; padding: 2px 0 2px 10px; color: #718078; font-size: 10px; line-height: 1.6; }
+.diet-days-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.diet-day-card { min-width: 0; padding: 17px; }
+.diet-day-card > h3 { margin: 0 0 13px; color: #38513f; font-size: 14px; }
+.diet-day-meals { display: grid; gap: 9px; }
+.diet-meal-card { min-width: 0; border: 1px solid #edf0ed; border-radius: 9px; background: #fcfdfc; padding: 11px; }
+.diet-meal-slot { color: #718078; font-size: 9px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
+.diet-meal-card h4 { overflow-wrap: anywhere; margin: 5px 0 0; color: #34443a; font-size: 12px; }
+.diet-meal-description, .diet-slot-empty { margin: 5px 0 0; color: #7a857e; font-size: 10px; line-height: 1.55; }
+.nutrition-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.nutrition-tag { border-radius: 5px; background: #eef5ef; padding: 4px 6px; color: #4e7157; font-size: 8px; font-weight: 600; }
+.diet-meal-prep { margin: 8px 0 0; color: #66766b; font-size: 9px; line-height: 1.55; }
+.diet-ingredients { margin-top: 8px; border-top: 1px solid #edf0ed; padding-top: 7px; }
+.diet-ingredients summary { color: #647269; font-size: 9px; font-weight: 700; cursor: pointer; }
+.diet-ingredients ul { display: grid; gap: 4px; margin: 7px 0 0; padding-left: 15px; }
+.diet-ingredients li { display: flex; justify-content: space-between; gap: 8px; color: #758078; font-size: 9px; }
+.diet-support-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr); align-items: start; gap: 14px; }
+.diet-grocery-card, .diet-budget-card, .diet-preparation-card { padding: 19px; }
+.diet-grocery-card .section-header, .diet-budget-card .section-header, .diet-preparation-card .section-header { display: block; margin-bottom: 14px; }
+.diet-grocery-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.diet-grocery-list li { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid #edf0ed; padding: 9px 0; }
+.diet-grocery-list li:first-child { border-top: 0; }
+.grocery-item-name { color: #4b5a50; font-size: 11px; font-weight: 600; }
+.grocery-item-name small { display: block; margin-top: 3px; color: #929b95; font-size: 9px; font-weight: 400; }
+.diet-grocery-list strong { align-self: center; color: #67756c; font-size: 10px; font-weight: 600; text-align: right; }
+.diet-no-groceries, .diet-budget-card > p { margin: 0; color: #78847b; font-size: 10px; line-height: 1.6; }
+.diet-budget-values { display: grid; gap: 9px; margin-bottom: 11px; }
+.diet-budget-values > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf0ed; padding-bottom: 8px; }
+.diet-budget-values span { color: #79857c; font-size: 10px; }
+.diet-budget-values strong { color: #526358; font-size: 11px; }
+.diet-preparation-card > ul { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.diet-preparation-card > ul > li { display: grid; grid-template-columns: minmax(150px, .8fr) minmax(0, 1.2fr); gap: 15px; border-top: 1px solid #edf0ed; padding: 10px 0; }
+.diet-preparation-card > ul > li:first-child { border-top: 0; }
+.diet-preparation-card > ul > li span strong { display: block; color: #4c5c51; font-size: 10px; }
+.diet-preparation-card > ul > li span small { display: block; margin-top: 3px; color: #929b95; font-size: 9px; }
+.diet-preparation-card > ul > li p { margin: 0; color: #718078; font-size: 10px; line-height: 1.6; }
+.diet-preparation-card > p { margin: 0; color: #78847b; font-size: 10px; }
+
 @media (max-width: 1100px) {
-  .page-content { padding-inline: 28px; }.topbar { padding-inline: 28px; }.overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.summary-card:last-child { grid-column: span 2; }.actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.body-shape-layout, .outfit-layout { grid-template-columns: 1fr; }.result-card { min-height: 220px; }.wardrobe-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wardrobe-search-field { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page-content { padding-inline: 28px; }.topbar { padding-inline: 28px; }.overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.summary-card:last-child { grid-column: span 2; }.actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.body-shape-layout, .outfit-layout { grid-template-columns: 1fr; }.diet-request-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }.diet-request-actions { grid-column: span 2; }.diet-support-grid { grid-template-columns: 1fr; }.diet-days-grid { grid-template-columns: 1fr; }.result-card { min-height: 220px; }.wardrobe-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wardrobe-search-field { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .sidebar { transform: translateX(-102%); box-shadow: none; }.sidebar.is-open { transform: translateX(0); box-shadow: 12px 0 30px rgb(30 43 34 / 12%); }.sidebar-backdrop.is-visible { position: fixed; z-index: 15; inset: 0; display: block; border: 0; background: rgb(26 38 29 / 28%); }.app-main { margin-left: 0; }.mobile-menu { display: inline-grid; }.topbar { height: 62px; gap: 10px; padding-inline: 17px; }.topbar-actions { gap: 8px; }.search-box { width: min(35vw, 170px); }.profile-name-wrap { display: none; }.page-content { padding: 26px 18px 42px; }.dashboard-welcome { margin-bottom: 21px; }.welcome-title { font-size: 26px; }.demo-badge { font-size: 9px; }
 }
 @media (max-width: 540px) {
-  .topbar-title { font-size: 14px; }.topbar-actions { gap: 3px; }.search-box { width: 34px; padding: 8px; border-color: transparent; background: transparent; }.search-box input, .search-shortcut { position: absolute; width: 1px; height: 1px; opacity: 0; }.search-box:focus-within { position: absolute; right: 112px; left: 54px; z-index: 2; width: auto; border-color: var(--line); background: white; }.search-box:focus-within input { position: static; width: 100%; height: auto; opacity: 1; }.dashboard-welcome { flex-direction: column; gap: 13px; }.welcome-title { font-size: 25px; }.overview-grid { grid-template-columns: 1fr; gap: 11px; }.summary-card, .summary-card:last-child { grid-column: auto; min-height: 154px; }.actions-grid { grid-template-columns: 1fr 1fr; gap: 9px; }.action-button { align-items: flex-start; gap: 8px; padding: 11px 9px; }.action-description { font-size: 8px; }.weekly-placeholder { grid-template-columns: 1fr; gap: 13px; }.week-days { justify-content: space-between; }.section-block { margin-top: 24px; }.measurement-card, .result-card { padding: 17px; }.wardrobe-welcome { align-items: flex-start; }.wardrobe-form-card { padding: 17px; }.wardrobe-filter-form { grid-template-columns: 1fr 1fr; gap: 9px; }.wardrobe-search-field { grid-column: span 2; }.wardrobe-filter-actions { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: 1fr; }.outfit-request-card, .outfit-result-card, .outfit-insufficient-card { padding: 17px; }.outfit-pieces-grid { grid-template-columns: 1fr; }
+  .topbar-title { font-size: 14px; }.topbar-actions { gap: 3px; }.search-box { width: 34px; padding: 8px; border-color: transparent; background: transparent; }.search-box input, .search-shortcut { position: absolute; width: 1px; height: 1px; opacity: 0; }.search-box:focus-within { position: absolute; right: 112px; left: 54px; z-index: 2; width: auto; border-color: var(--line); background: white; }.search-box:focus-within input { position: static; width: 100%; height: auto; opacity: 1; }.dashboard-welcome { flex-direction: column; gap: 13px; }.welcome-title { font-size: 25px; }.overview-grid { grid-template-columns: 1fr; gap: 11px; }.summary-card, .summary-card:last-child { grid-column: auto; min-height: 154px; }.actions-grid { grid-template-columns: 1fr 1fr; gap: 9px; }.action-button { align-items: flex-start; gap: 8px; padding: 11px 9px; }.action-description { font-size: 8px; }.weekly-placeholder { grid-template-columns: 1fr; gap: 13px; }.week-days { justify-content: space-between; }.section-block { margin-top: 24px; }.measurement-card, .result-card { padding: 17px; }.wardrobe-welcome { align-items: flex-start; }.wardrobe-form-card { padding: 17px; }.wardrobe-filter-form { grid-template-columns: 1fr 1fr; gap: 9px; }.wardrobe-search-field { grid-column: span 2; }.wardrobe-filter-actions { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: 1fr; }.outfit-request-card, .outfit-result-card, .outfit-insufficient-card { padding: 17px; }.outfit-pieces-grid { grid-template-columns: 1fr; }.diet-request-card, .diet-unavailable-card, .diet-grocery-card, .diet-budget-card, .diet-preparation-card { padding: 16px; }.diet-request-form { grid-template-columns: 1fr; }.diet-request-actions { grid-column: auto; flex-wrap: wrap; }.diet-plan-heading { align-items: flex-start; flex-direction: column; }.diet-plan-heading h3 { font-size: 17px; }.diet-preparation-card > ul > li { grid-template-columns: 1fr; gap: 5px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

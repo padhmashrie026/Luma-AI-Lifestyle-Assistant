@@ -7,7 +7,7 @@ import StatCard from '../components/StatCard.jsx'
 function Dashboard() {
   const actions = [
     { title: 'Get outfit ideas', detail: 'Build a look from your wardrobe', icon: 'clothes', path: '/outfits' },
-    { title: 'Plan a meal', detail: 'Organize your day', icon: 'leaf', path: '/diet' },
+    { title: 'Plan your week', detail: 'Build a meal plan', icon: 'leaf', path: '/diet' },
     { title: 'Log spending', detail: 'Keep your budget close', icon: 'wallet', path: '/expenses' },
     { title: 'View daily plan', detail: 'See your routine', icon: 'calendar', path: '/daily-plan' },
   ]

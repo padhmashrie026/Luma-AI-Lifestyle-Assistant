@@ -5,6 +5,7 @@ import PlaceholderPage from './pages/PlaceholderPage.jsx'
 import BodyShapePage from './pages/BodyShapePage.jsx'
 import WardrobePage from './pages/WardrobePage.jsx'
 import OutfitRecommendationPage from './pages/OutfitRecommendationPage.jsx'
+import DietPlannerPage from './pages/DietPlannerPage.jsx'
 import './App.css'
 
 const pages = {
@@ -12,7 +13,7 @@ const pages = {
   '/body-shape': { title: 'Body Shape Calculator', component: <BodyShapePage /> },
   '/wardrobe': { title: 'Wardrobe', component: <WardrobePage /> },
   '/outfits': { title: 'Outfit Recommendation', component: <OutfitRecommendationPage /> },
-  '/diet': { title: 'Diet Planner', component: <PlaceholderPage title="Diet Planner" /> },
+  '/diet': { title: 'Diet Planner', component: <DietPlannerPage /> },
   '/expenses': { title: 'Expenses', component: <PlaceholderPage title="Expenses" /> },
   '/daily-plan': { title: 'Daily Plan', component: <PlaceholderPage title="Daily Plan" /> },
   '/insights': { title: 'Insights', component: <PlaceholderPage title="Insights" /> },

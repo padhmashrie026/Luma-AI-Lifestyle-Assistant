@@ -30,8 +30,8 @@ npm run build
 - `/profile`
 - `/settings`
 
-The feature pages are intentionally informational placeholders at this stage, except for the Body Shape Calculator, Smart Wardrobe, and Outfit Recommendation.
+The feature pages are intentionally informational placeholders at this stage, except for the Body Shape Calculator, Smart Wardrobe, Outfit Recommendation, and Diet Planner.
 
 ## Django API connection
 
-The Body Shape Calculator sends measurements to `POST /api/body-shape/calculate/`. Smart Wardrobe uses the `/api/wardrobe/items/` collection and item detail URLs for CRUD operations. Outfit Recommendation sends `profile_id`, `occasion`, and an optional `body_shape` to `POST /api/outfits/recommend/`. During local development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`; start Django with `python backend/manage.py runserver` from the project root. Set `VITE_API_BASE_URL` when the API is hosted at another base URL.
+The Body Shape Calculator sends measurements to `POST /api/body-shape/calculate/`. Smart Wardrobe uses the `/api/wardrobe/items/` collection and item detail URLs for CRUD operations. Outfit Recommendation sends `profile_id`, `occasion`, and an optional `body_shape` to `POST /api/outfits/recommend/`. Diet Planner sends `profile_id` and `week_start` to `POST /api/diet/plan/`. During local development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`; start Django with `python backend/manage.py runserver` from the project root. Set `VITE_API_BASE_URL` when the API is hosted at another base URL.
