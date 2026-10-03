@@ -3,12 +3,13 @@ import AppLayout from './components/AppLayout.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import PlaceholderPage from './pages/PlaceholderPage.jsx'
 import BodyShapePage from './pages/BodyShapePage.jsx'
+import WardrobePage from './pages/WardrobePage.jsx'
 import './App.css'
 
 const pages = {
   '/dashboard': { title: 'Dashboard', component: <Dashboard /> },
   '/body-shape': { title: 'Body Shape Calculator', component: <BodyShapePage /> },
-  '/wardrobe': { title: 'Wardrobe', component: <PlaceholderPage title="Wardrobe" /> },
+  '/wardrobe': { title: 'Wardrobe', component: <WardrobePage /> },
   '/diet': { title: 'Diet Planner', component: <PlaceholderPage title="Diet Planner" /> },
   '/expenses': { title: 'Expenses', component: <PlaceholderPage title="Expenses" /> },
   '/daily-plan': { title: 'Daily Plan', component: <PlaceholderPage title="Daily Plan" /> },
