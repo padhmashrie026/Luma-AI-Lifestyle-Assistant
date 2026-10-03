@@ -20,6 +20,7 @@ npm run build
 ## Pages
 
 - `/dashboard`
+- `/body-shape`
 - `/wardrobe`
 - `/diet`
 - `/expenses`
@@ -28,4 +29,8 @@ npm run build
 - `/profile`
 - `/settings`
 
-The feature pages are intentionally informational placeholders at this stage.
+The feature pages are intentionally informational placeholders at this stage, except for the Body Shape Calculator.
+
+## Django API connection
+
+The Body Shape Calculator sends measurements to `POST /api/body-shape/calculate/`. During local development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`; start Django with `python backend/manage.py runserver` from the project root. Set `VITE_API_BASE_URL` when the API is hosted at another base URL.

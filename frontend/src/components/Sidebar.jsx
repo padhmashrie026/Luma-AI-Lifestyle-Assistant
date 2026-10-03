@@ -2,6 +2,7 @@ import Icon from './Icon.jsx'
 
 const primaryLinks = [
   { label: 'Dashboard', path: '/dashboard', icon: 'grid' },
+  { label: 'Body Shape', path: '/body-shape', icon: 'user' },
   { label: 'Wardrobe', path: '/wardrobe', icon: 'clothes' },
   { label: 'Diet Planner', path: '/diet', icon: 'leaf' },
   { label: 'Expenses', path: '/expenses', icon: 'wallet' },
