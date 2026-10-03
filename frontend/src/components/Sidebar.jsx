@@ -4,6 +4,7 @@ const primaryLinks = [
   { label: 'Dashboard', path: '/dashboard', icon: 'grid' },
   { label: 'Body Shape', path: '/body-shape', icon: 'user' },
   { label: 'Wardrobe', path: '/wardrobe', icon: 'clothes' },
+  { label: 'Outfit ideas', path: '/outfits', icon: 'sparkle' },
   { label: 'Diet Planner', path: '/diet', icon: 'leaf' },
   { label: 'Expenses', path: '/expenses', icon: 'wallet' },
   { label: 'Daily Plan', path: '/daily-plan', icon: 'calendar' },
