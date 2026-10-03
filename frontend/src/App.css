@@ -332,8 +332,63 @@
 .expense-row-actions .button { padding-inline: 9px; }
 .expense-list-section { margin-top: 24px; }
 .expense-list-section .section-header { margin-bottom: 12px; }
+
+/* Daily plan and tracking */
+.daily-notice { margin: 0 0 15px; border: 1px solid #d7e7da; border-radius: 9px; background: #f1f8f2; padding: 11px 14px; color: #3e6749; font-size: 12px; }
+.daily-scope-card, .daily-form-card { margin-bottom: 16px; padding: 19px; }
+.daily-scope-grid, .daily-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+.daily-scope-grid label, .daily-form-grid label { display: block; margin-bottom: 6px; color: #59685e; font-size: 10px; font-weight: 700; }
+.daily-scope-grid input, .daily-form-grid input, .daily-form-grid textarea { width: 100%; min-height: 38px; border: 1px solid #e3e9e4; border-radius: 8px; background: #fff; padding: 8px 10px; color: var(--ink); font: inherit; font-size: 11px; }
+.daily-scope-grid small, .daily-form-grid small, .daily-form-grid label span { display: block; margin-top: 5px; color: #89948d; font-size: 9px; font-weight: 400; }
+.daily-form-card .section-header { margin-bottom: 16px; }
+.daily-form-grid textarea { resize: vertical; }
+.daily-notes-field { grid-column: 1 / -1; }
+.daily-content-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .7fr); align-items: start; gap: 15px; }
+.daily-main-column, .daily-progress-column { display: grid; gap: 15px; min-width: 0; }
+.daily-plan-card, .daily-checkins-card, .daily-progress-card { padding: 19px; }
+.daily-plan-actions { display: flex; gap: 7px; }
+.daily-plan-details { display: grid; gap: 15px; }
+.daily-linked-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.daily-linked-item { display: flex; align-items: center; gap: 10px; border: 1px solid #edf0ed; border-radius: 10px; padding: 12px; }
+.daily-item-icon { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; border-radius: 9px; background: #f0f5f1; color: #57765f; }
+.daily-linked-item strong, .daily-linked-item small { display: block; }
+.daily-linked-item strong, .daily-plan-notes strong { color: #46564b; font-size: 11px; }
+.daily-linked-item small { margin-top: 4px; color: #849087; font-size: 9px; }
+.daily-plan-notes { border-top: 1px solid #edf0ed; padding-top: 12px; }
+.daily-plan-notes p, .daily-empty-inline p, .daily-empty p { margin: 5px 0 0; color: #7b887f; font-size: 11px; line-height: 1.55; white-space: pre-wrap; }
+.daily-empty-inline { padding: 6px 0 1px; }
+.daily-empty-inline h3, .daily-empty h3 { margin: 0; color: #3d4c42; font-size: 13px; }
+.daily-empty-inline .button { margin-top: 13px; }
+.daily-checkin-list { display: grid; gap: 8px; }
+.daily-checkin { display: flex; min-height: 54px; align-items: center; gap: 11px; border: 1px solid #edf0ed; border-radius: 10px; padding: 9px 12px; cursor: pointer; }
+.daily-checkin.is-complete { border-color: #d9e9dc; background: #f4f8f4; }
+.daily-checkin input { width: 17px; height: 17px; accent-color: #4d7758; cursor: pointer; }
+.daily-checkin-copy { flex: 1; }
+.daily-checkin-copy strong, .daily-checkin-copy small { display: block; }
+.daily-checkin-copy strong { color: #46564b; font-size: 11px; }
+.daily-checkin-copy small { margin-top: 3px; color: #87928a; font-size: 9px; }
+.daily-checkin.is-complete .daily-checkin-copy small { color: #4d7758; }
+.daily-checkin-saving { color: #819087; font-size: 9px; }
+.daily-tracking-notes { margin: 12px 0 0; color: #768279; font-size: 10px; line-height: 1.5; }
+.daily-tracking-notes strong { color: #526258; }
+.daily-progress-top { display: flex; align-items: baseline; gap: 7px; margin-top: 3px; }
+.daily-progress-top strong { color: #2e4937; font-size: 27px; letter-spacing: -.8px; }
+.daily-progress-top span { color: #829087; font-size: 10px; }
+.daily-progress-track { overflow: hidden; height: 8px; margin: 10px 0 14px; border-radius: 9px; background: #edf1ed; }
+.daily-progress-track span { display: block; height: 100%; border-radius: inherit; background: #79a184; transition: width 180ms ease; }
+.daily-progress-counts { display: grid; gap: 0; margin: 0; }
+.daily-progress-counts div, .daily-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #edf0ed; padding: 10px 0; }
+.daily-progress-counts dt, .daily-progress-row span { color: #7a867e; font-size: 10px; }
+.daily-progress-counts dd, .daily-progress-row strong { margin: 0; color: #4c5c51; font-size: 10px; font-weight: 700; }
+.daily-progress-fields { margin-top: 10px; }
+.daily-progress-fields h3 { margin: 0 0 3px; color: #526258; font-size: 10px; }
+.daily-loading, .daily-empty { padding: 22px; color: #78847b; font-size: 11px; }
+.daily-error, .daily-error-box { color: #a33d36; font-size: 11px; }
+.daily-error-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; border: 1px solid #f0d4d1; border-radius: 9px; background: #fff7f6; padding: 12px; }
 @media (max-width: 760px) { .expense-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .daily-content-grid { grid-template-columns: 1fr; }.daily-progress-column { grid-row: 1; } }
 @media (max-width: 540px) { .expense-scope, .expense-form-grid, .expense-filters { grid-template-columns: 1fr; }.expense-notes-field { grid-column: auto; }.expense-category-row { grid-template-columns: 1fr auto; gap: 8px; }.expense-meter { grid-column: 1 / -1; }.expense-table-wrap { overflow: visible; border: 0; background: transparent; }.expense-table, .expense-table tbody, .expense-table tr, .expense-table td { display: block; width: 100%; }.expense-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }.expense-table tr { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 10px; background: white; padding: 6px 12px; }.expense-table td { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf0ed; padding: 9px 0; text-align: right; }.expense-table td::before { content: attr(data-label); color: #87928a; font-size: 9px; font-weight: 700; text-align: left; }.expense-table td:last-child { border-bottom: 0; }.expense-row-actions { justify-content: flex-end; } }
+@media (max-width: 540px) { .daily-scope-grid, .daily-form-grid, .daily-linked-items { grid-template-columns: 1fr; }.daily-notes-field { grid-column: auto; }.daily-plan-card, .daily-checkins-card, .daily-progress-card, .daily-form-card, .daily-scope-card { padding: 16px; }.daily-plan-actions { flex-wrap: wrap; } }
 
 @media (max-width: 1100px) {
   .page-content { padding-inline: 28px; }.topbar { padding-inline: 28px; }.overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.summary-card:last-child { grid-column: span 2; }.actions-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.body-shape-layout, .outfit-layout { grid-template-columns: 1fr; }.diet-request-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }.diet-request-actions { grid-column: span 2; }.diet-support-grid { grid-template-columns: 1fr; }.diet-days-grid { grid-template-columns: 1fr; }.result-card { min-height: 220px; }.wardrobe-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wardrobe-search-field { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
