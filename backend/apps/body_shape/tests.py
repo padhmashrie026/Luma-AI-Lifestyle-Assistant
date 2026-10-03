@@ -1,9 +1,17 @@
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIClient
+from io import StringIO
 
 from .models import Profile
 from .calculations import calculate_body_shape
+from ..diet.models import Meal, MealPlan, MealPlanItem
+from ..expenses.models import BudgetCategory, Expense, Income
+from ..lifestyle.models import DailyPlan
+from ..outfits.models import Outfit, OutfitItem
+from ..tracking.models import DailyTracking
+from ..wardrobe.models import WardrobeItem
 
 
 class BodyShapeCalculationTests(SimpleTestCase):
@@ -139,3 +147,64 @@ class ProfileAndSettingsApiTests(TestCase):
         unknown = self.client.patch(self.settings_url, {"theme": "dark"}, format="json")
         self.assertEqual(unknown.status_code, 400)
         self.assertIn("theme", unknown.data)
+
+
+class DemoSeederCommandTests(TestCase):
+    def test_seed_command_is_idempotent_and_preserves_existing_demo_records(self):
+        user = get_user_model().objects.create_user(username="seed-demo", password="not-a-real-login")
+        profile = Profile.objects.create(user=user, display_name="Demo User", currency_code="USD")
+        existing_item = WardrobeItem.objects.create(
+            profile=profile,
+            name="Demo blue cotton shirt",
+            category=WardrobeItem.Category.TOP,
+            color="blue",
+            notes="Keep this existing note",
+        )
+        personal_item = WardrobeItem.objects.create(
+            profile=profile,
+            name="Personal jacket",
+            category=WardrobeItem.Category.OUTERWEAR,
+            color="black",
+        )
+
+        first_output = StringIO()
+        call_command("seed_demo_data", stdout=first_output)
+        counts_after_first_run = self._demo_counts()
+
+        second_output = StringIO()
+        call_command("seed_demo_data", stdout=second_output)
+        counts_after_second_run = self._demo_counts()
+
+        self.assertEqual(counts_after_first_run, counts_after_second_run)
+        self.assertIn("reused", second_output.getvalue())
+        profile.refresh_from_db()
+        existing_item.refresh_from_db()
+        self.assertEqual(profile.currency_code, "USD")
+        self.assertEqual(existing_item.notes, "Keep this existing note")
+        self.assertTrue(WardrobeItem.objects.filter(pk=personal_item.pk).exists())
+        self.assertTrue(Meal.objects.filter(profile=profile, meal_type=Meal.MealType.BREAKFAST).exists())
+        self.assertTrue(Meal.objects.filter(profile=profile, meal_type=Meal.MealType.LUNCH).exists())
+        self.assertTrue(Meal.objects.filter(profile=profile, meal_type=Meal.MealType.DINNER).exists())
+        self.assertTrue(MealPlanItem.objects.filter(meal_plan__profile=profile).exists())
+        self.assertTrue(OutfitItem.objects.filter(outfit__profile=profile).exists())
+        self.assertTrue(BudgetCategory.objects.filter(profile=profile).exists())
+        self.assertTrue(Expense.objects.filter(profile=profile).exists())
+        self.assertTrue(Income.objects.filter(profile=profile).exists())
+        self.assertTrue(DailyPlan.objects.filter(profile=profile).exists())
+        self.assertTrue(DailyTracking.objects.filter(profile=profile).exists())
+
+    def _demo_counts(self):
+        return (
+            Profile.objects.count(),
+            Meal.objects.count(),
+            MealPlan.objects.count(),
+            MealPlanItem.objects.count(),
+            WardrobeItem.objects.count(),
+            Outfit.objects.count(),
+            OutfitItem.objects.count(),
+            BudgetCategory.objects.count(),
+            Expense.objects.count(),
+            Income.objects.count(),
+            DailyPlan.objects.count(),
+            DailyTracking.objects.count(),
+        )
