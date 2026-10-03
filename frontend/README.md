@@ -32,3 +32,5 @@ During development, requests to `/api` are proxied to Django at `http://127.0.0.
 - `/insights` — placeholder; no Insights API exists yet.
 
 The backend has no application authentication. Profile-based pages use an existing `profile_id` as a temporary development selector; this is not secure multi-user authorization. See the root README for backend setup and API details.
+
+For the full project submission documentation, see [`../docs/setup.md`](../docs/setup.md), [`../docs/architecture.md`](../docs/architecture.md), and [`../docs/api.md`](../docs/api.md). The backend test and frontend build commands are listed in [`../docs/testing.md`](../docs/testing.md).

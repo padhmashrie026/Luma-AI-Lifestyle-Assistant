@@ -1,20 +1,55 @@
 ﻿# AI Lifestyle Assistant
 
-An MCA mini project with a React frontend and a Django REST Framework backend. The project uses SQLite for local development and is being built feature by feature.
+An MCA mini project for organizing everyday clothing, meal planning, expenses, and routine progress in one place. It provides a React dashboard backed by a Django REST API, with a shared profile record connecting profile-scoped data.
+
+The application is intended as a practical personal organization tool. Its body-shape output is approximate styling guidance, outfit suggestions use transparent rules over saved wardrobe items, and meal planning is a general planning aid rather than medical or nutrition advice.
+
+## Technology stack
+
+- **Frontend:** React 19, Vite 8, JavaScript, and CSS.
+- **Backend:** Python, Django 5.2, Django REST Framework, and `django-cors-headers`.
+- **Database:** SQLite for local development.
+- **Tests:** Django's test framework and the production Vite build.
+
+## Main modules
+
+- **Body Shape:** submits four measurements to a rule-based calculator and displays approximate styling guidance. The calculator request does not save measurements.
+- **Smart Wardrobe:** creates, lists, filters, edits, and deletes saved wardrobe items.
+- **Outfit Recommendation:** recommends a combination from available wardrobe items for an occasion. It may use a supplied body-shape label or an existing saved measurement. It does not save the generated recommendation.
+- **Diet Planner:** builds a seven-day preview using meals and food preferences already saved for a profile. The API reports the generated plan as unsaved; the current frontend does not persist it. No food prices are stored, so the API does not estimate a budget.
+- **Expense Manager:** records and filters expenses and displays totals, category spending, and budget status from the API.
+- **Daily Plan & Tracking:** saves daily plans with optional existing outfit/meal-plan references and notes. Tracking records four check-ins and the API returns progress summaries.
+- **Profile & Settings:** reads and updates fields on an existing Django user/profile and its currency preference.
+- **Insights:** the route is a placeholder and has no API.
+
+## Architecture
+
+The React application is in `frontend/`. `src/App.jsx` maps browser paths to pages, reusable layout/components live in `src/components/`, pages live in `src/pages/`, and endpoint-specific functions live in `src/services/`. `apiClient.js` is the shared HTTP client. Vite proxies `/api` to Django while developing.
+
+The Django project is in `backend/`. `config/` holds project settings and root URL registration; feature apps in `apps/` hold their models, serializers, views, URLs, and tests. Some calculations are kept in service modules such as `outfits/recommendations.py`, `diet/planning.py`, `expenses/summaries.py`, and `tracking/summaries.py`. The local database is `backend/db.sqlite3`.
+
+See [architecture](docs/architecture.md), [setup](docs/setup.md), and [API reference](docs/api.md) for detail.
 
 ## Project structure
 
-- `frontend/` — React and Vite user interface.
-- `backend/` — Django, Django REST Framework, and SQLite API.
+```text
+backend/
+  config/                 Django settings and root URLs
+  apps/                   Feature models, serializers, views, URLs, services, and tests
+  manage.py
+frontend/
+  src/components/         Shared dashboard and form components
+  src/pages/              Dashboard and feature pages
+  src/services/           Shared API client and feature request functions
+  vite.config.js
+docs/                     Setup, architecture, API, and testing references
+```
 
-## Requirements
+## Windows development setup
 
-- Node.js 20.19+ or 22.12+.
-- Python 3.10 or newer.
+Use separate PowerShell terminals for the backend and frontend. The commands below are run from the repository root.
 
-## Run locally
-
-Start the backend in one PowerShell terminal:
+### Backend
 
 ```powershell
 cd backend
@@ -25,7 +60,9 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Start the frontend in a second terminal:
+The API is served at `http://127.0.0.1:8000/`. To use profile-based modules, create a Django user and an associated Profile record. A superuser can be created with `python manage.py createsuperuser` and records can be managed at `/admin/`.
+
+### Frontend
 
 ```powershell
 cd frontend
@@ -33,30 +70,27 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-Open the local URL printed by Vite (usually `http://localhost:5173`). During development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`. Set `VITE_API_BASE_URL` to use a different API base URL, or `VITE_API_PROXY_TARGET` to change the Vite proxy target.
+Open the local URL Vite prints (normally `http://localhost:5173`). Vite proxies `/api` to `http://127.0.0.1:8000`. `VITE_API_BASE_URL` changes the API base URL; `VITE_API_PROXY_TARGET` changes the development proxy target. The installed Vite and React plugin packages require Node.js `^20.19.0` or `>=22.12.0`.
 
-## Available modules and APIs
+The complete Windows commands and troubleshooting notes are in [docs/setup.md](docs/setup.md).
 
-- **Body Shape Calculator:** `POST /api/body-shape/calculate/` returns approximate, rule-based styling guidance; it does not save measurements.
-- **Wardrobe:** `GET/POST /api/wardrobe/items/` and `GET/PUT/PATCH/DELETE /api/wardrobe/items/<id>/` manage saved items.
-- **Outfit Recommendation:** `POST /api/outfits/recommend/` returns a rule-based suggestion from available wardrobe items.
-- **Diet Planner:** `POST /api/diet/plan/` returns a seven-day preview based on saved meals; generated plans are not saved.
-- **Expense Manager:** `/api/expenses/` supports list/create and detail retrieval/update/delete. `GET /api/expenses/summary/?profile_id=<id>` returns spending and budget summaries.
-- **Daily Plan:** `/api/lifestyle/daily-plan/` supports list/create and detail retrieve/update/delete.
-- **Tracking:** `/api/tracking/` supports list/create and detail retrieve/update. `GET /api/tracking/summary/?profile_id=<id>` returns completion summaries.
-- **Profile and Settings:** `GET/PATCH /api/profile/?profile_id=<id>` and `GET/PATCH /api/settings/?profile_id=<id>` use existing Profile and Django User records.
-- **Insights:** the sidebar route is a placeholder; no Insights API is implemented.
+## Routes
 
-## Development assumptions
+- `/dashboard`
+- `/body-shape`
+- `/wardrobe`
+- `/outfits`
+- `/diet`
+- `/expenses`
+- `/daily-plan`
+- `/profile`
+- `/settings`
+- `/insights` (placeholder)
 
-Application authentication is not implemented. APIs that need a profile accept a `profile_id`; this is a development convenience, not a secure way to identify or authorize a user. Create Django users and their associated profiles through the Django admin or project data setup before using profile-based modules. The Profile API edits existing records and does not create users or profiles.
+## Verification
 
-The Django secret key currently in `backend/config/settings.py` is a development-only value. Do not use it for a deployed application or replace it with a real secret in source control.
+At the most recent integration verification, `python manage.py check` passed, the full Django suite passed **62 tests**, the Vite production build passed, all listed frontend routes returned HTTP 200 from the development server, and all documented API paths resolved in Django. See [docs/testing.md](docs/testing.md) for commands and the final checklist.
 
-## Run backend checks
+## Development and deployment limitations
 
-```powershell
-cd backend
-python manage.py check
-python manage.py test
-```
+Application authentication is not implemented. Profile-based APIs accept an explicit `profile_id` and are open in the development configuration; this is not secure multi-user access control. The Profile and Settings pages require an existing profile ID. The project settings use `DEBUG = True`, a development-only Django secret key, SQLite, and local CORS origins. These settings are for local work and must be replaced or secured before deployment. No production deployment is configured; see [docs/setup.md](docs/setup.md#production-preparation).
