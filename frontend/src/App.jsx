@@ -6,6 +6,7 @@ import BodyShapePage from './pages/BodyShapePage.jsx'
 import WardrobePage from './pages/WardrobePage.jsx'
 import OutfitRecommendationPage from './pages/OutfitRecommendationPage.jsx'
 import DietPlannerPage from './pages/DietPlannerPage.jsx'
+import ExpensesPage from './pages/ExpensesPage.jsx'
 import './App.css'
 
 const pages = {
@@ -14,7 +15,7 @@ const pages = {
   '/wardrobe': { title: 'Wardrobe', component: <WardrobePage /> },
   '/outfits': { title: 'Outfit Recommendation', component: <OutfitRecommendationPage /> },
   '/diet': { title: 'Diet Planner', component: <DietPlannerPage /> },
-  '/expenses': { title: 'Expenses', component: <PlaceholderPage title="Expenses" /> },
+  '/expenses': { title: 'Expenses', component: <ExpensesPage /> },
   '/daily-plan': { title: 'Daily Plan', component: <PlaceholderPage title="Daily Plan" /> },
   '/insights': { title: 'Insights', component: <PlaceholderPage title="Insights" /> },
   '/profile': { title: 'Profile', component: <PlaceholderPage title="Profile" /> },
