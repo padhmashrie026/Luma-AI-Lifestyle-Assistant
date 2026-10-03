@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/", include("apps.body_shape.urls")),
     path("api/wardrobe/", include("apps.wardrobe.urls")),
     path("api/outfits/", include("apps.outfits.urls")),
+    path("api/diet/", include("apps.diet.urls")),
 ]
