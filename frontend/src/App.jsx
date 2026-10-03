@@ -8,6 +8,7 @@ import OutfitRecommendationPage from './pages/OutfitRecommendationPage.jsx'
 import DietPlannerPage from './pages/DietPlannerPage.jsx'
 import ExpensesPage from './pages/ExpensesPage.jsx'
 import DailyPlanPage from './pages/DailyPlanPage.jsx'
+import { ProfilePage, SettingsPage } from './pages/ProfileSettingsPage.jsx'
 import './App.css'
 
 const pages = {
@@ -19,8 +20,8 @@ const pages = {
   '/expenses': { title: 'Expenses', component: <ExpensesPage /> },
   '/daily-plan': { title: 'Daily Plan', component: <DailyPlanPage /> },
   '/insights': { title: 'Insights', component: <PlaceholderPage title="Insights" /> },
-  '/profile': { title: 'Profile', component: <PlaceholderPage title="Profile" /> },
-  '/settings': { title: 'Settings', component: <PlaceholderPage title="Settings" /> },
+  '/profile': { title: 'Profile', component: <ProfilePage /> },
+  '/settings': { title: 'Settings', component: <SettingsPage /> },
 }
 
 function App() {
