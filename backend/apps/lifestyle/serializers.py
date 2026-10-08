@@ -6,8 +6,17 @@ from apps.outfits.models import Outfit
 from .models import DailyPlan
 
 
+class CurrentUserProfileDefault:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return Profile.objects.get(user=serializer_field.context["request"].user)
+
+
 class DailyPlanSerializer(serializers.ModelSerializer):
-    profile = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all())
+    profile = serializers.PrimaryKeyRelatedField(
+        read_only=True, default=CurrentUserProfileDefault()
+    )
     outfit = serializers.PrimaryKeyRelatedField(
         queryset=Outfit.objects.all(), required=False, allow_null=True
     )
@@ -26,9 +35,23 @@ class DailyPlanSerializer(serializers.ModelSerializer):
     def validate_notes(self, value):
         return value.strip()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            profile = Profile.objects.filter(user=request.user).first()
+            if profile:
+                self.fields["outfit"].queryset = Outfit.objects.filter(profile=profile)
+                self.fields["meal_plan"].queryset = MealPlan.objects.filter(profile=profile)
+
     def validate(self, attrs):
         instance = self.instance
-        profile = attrs.get("profile", instance.profile if instance else None)
+        request = self.context.get("request")
+        profile = (
+            Profile.objects.filter(user=request.user).first()
+            if request and request.user.is_authenticated
+            else instance.profile if instance else None
+        )
         plan_date = attrs.get("plan_date", instance.plan_date if instance else None)
         outfit = attrs.get("outfit", instance.outfit if instance else None)
         meal_plan = attrs.get("meal_plan", instance.meal_plan if instance else None)

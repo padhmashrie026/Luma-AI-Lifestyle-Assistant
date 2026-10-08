@@ -12,8 +12,17 @@ class StrictBooleanField(serializers.BooleanField):
         return data
 
 
+class CurrentUserProfileDefault:
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return Profile.objects.get(user=serializer_field.context["request"].user)
+
+
 class DailyTrackingSerializer(serializers.ModelSerializer):
-    profile = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all())
+    profile = serializers.PrimaryKeyRelatedField(
+        read_only=True, default=CurrentUserProfileDefault()
+    )
     daily_plan = serializers.PrimaryKeyRelatedField(
         queryset=DailyPlan.objects.all(), required=False, allow_null=True
     )
@@ -34,9 +43,22 @@ class DailyTrackingSerializer(serializers.ModelSerializer):
     def validate_notes(self, value):
         return value.strip()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            profile = Profile.objects.filter(user=request.user).first()
+            if profile:
+                self.fields["daily_plan"].queryset = DailyPlan.objects.filter(profile=profile)
+
     def validate(self, attrs):
         instance = self.instance
-        profile = attrs.get("profile", instance.profile if instance else None)
+        request = self.context.get("request")
+        profile = (
+            Profile.objects.filter(user=request.user).first()
+            if request and request.user.is_authenticated
+            else instance.profile if instance else None
+        )
         track_date = attrs.get("track_date", instance.track_date if instance else None)
         daily_plan = attrs.get("daily_plan", instance.daily_plan if instance else None)
         if daily_plan and profile and daily_plan.profile_id != profile.id:

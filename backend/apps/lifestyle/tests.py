@@ -29,14 +29,19 @@ class DailyPlanValidationTests(TestCase):
 
 class DailyPlanApiTests(TestCase):
     def setUp(self):
-        self.profile = Profile.objects.create(
-            user=get_user_model().objects.create_user("daily-plan-api")
-        )
+        self.user = get_user_model().objects.create_user("daily-plan-api")
+        self.profile = Profile.objects.create(user=self.user)
         self.client = APIClient()
+        self.client.force_authenticate(self.user)
         self.url = "/api/lifestyle/daily-plan/"
 
     def payload(self, **overrides):
-        return {"profile": self.profile.id, "plan_date": "2026-10-03", "notes": "Plan notes", **overrides}
+        return {"plan_date": "2026-10-03", "notes": "Plan notes", **overrides}
+
+    def test_anonymous_access_is_rejected(self):
+        self.client.force_authenticate(user=None)
+        self.assertIn(self.client.get(self.url).status_code, (401, 403))
+        self.assertIn(self.client.post(self.url, self.payload(), format="json").status_code, (401, 403))
 
     def test_create_list_retrieve_update_and_delete_daily_plan(self):
         created = self.client.post(self.url, self.payload(), format="json")
@@ -44,7 +49,7 @@ class DailyPlanApiTests(TestCase):
         self.assertEqual(created.data["plan_date"], "2026-10-03")
         self.assertEqual(created.data["notes"], "Plan notes")
 
-        listed = self.client.get(self.url, {"profile_id": self.profile.id})
+        listed = self.client.get(self.url)
         self.assertEqual(listed.status_code, 200)
         self.assertEqual(len(listed.data), 1)
 
@@ -84,3 +89,34 @@ class DailyPlanApiTests(TestCase):
 
         with self.assertRaises(ValidationError):
             plan.full_clean()
+
+    def test_forged_profile_fields_cannot_change_plan_owner(self):
+        other_profile = Profile.objects.create(
+            user=get_user_model().objects.create_user("daily-plan-forged")
+        )
+        response = self.client.post(
+            self.url,
+            self.payload(profile=other_profile.id, profile_id=other_profile.id),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(DailyPlan.objects.get(plan_date="2026-10-03").profile, self.profile)
+
+    def test_user_cannot_list_retrieve_update_or_delete_another_users_plan(self):
+        other_profile = Profile.objects.create(
+            user=get_user_model().objects.create_user("daily-plan-private")
+        )
+        other_plan = DailyPlan.objects.create(profile=other_profile, plan_date=date(2026, 10, 3))
+        self.assertEqual(self.client.get(self.url, {"profile_id": other_profile.id}).data, [])
+        detail = f"{self.url}{other_plan.id}/"
+        self.assertEqual(self.client.get(detail).status_code, 404)
+        self.assertEqual(self.client.patch(detail, {"notes": "changed"}, format="json").status_code, 404)
+        self.assertEqual(self.client.delete(detail).status_code, 404)
+
+    def test_new_user_has_empty_plan_list_and_can_create_for_selected_date(self):
+        user = get_user_model().objects.create_user("daily-plan-new-user")
+        Profile.objects.create(user=user)
+        self.client.force_authenticate(user)
+        self.assertEqual(self.client.get(self.url).data, [])
+        created = self.client.post(self.url, self.payload(), format="json")
+        self.assertEqual(created.status_code, 201)
