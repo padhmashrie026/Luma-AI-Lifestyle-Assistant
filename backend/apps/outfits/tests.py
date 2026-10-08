@@ -11,8 +11,8 @@ from .models import Outfit, OutfitItem
 
 class OutfitRecommendationTests(TestCase):
     def setUp(self):
-        user = get_user_model().objects.create_user(username="outfit-test")
-        self.profile = Profile.objects.create(user=user)
+        self.user = get_user_model().objects.create_user(username="outfit-test")
+        self.profile = Profile.objects.create(user=self.user)
         self.top = WardrobeItem.objects.create(
             profile=self.profile, name="Linen top", category=WardrobeItem.Category.TOP
         )
@@ -21,9 +21,15 @@ class OutfitRecommendationTests(TestCase):
         )
         self.url = "/api/outfits/recommend/"
         self.client = APIClient()
+        self.client.force_authenticate(self.user)
 
     def payload(self, **overrides):
-        return {"profile_id": self.profile.id, "occasion": "everyday", **overrides}
+        return {"occasion": "everyday", **overrides}
+
+    def test_anonymous_access_is_rejected(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, {"occasion": "everyday"}, format="json")
+        self.assertIn(response.status_code, (401, 403))
 
     def test_recommends_stored_available_items(self):
         response = self.client.post(self.url, self.payload(), format="json")
@@ -76,10 +82,9 @@ class OutfitRecommendationTests(TestCase):
 
     def test_invalid_input_is_rejected(self):
         for payload in (
-            {"profile_id": self.profile.id},
+            {},
             self.payload(occasion="casual"),
             self.payload(body_shape="not_set"),
-            self.payload(profile_id=99999),
         ):
             with self.subTest(payload=payload):
                 response = self.client.post(self.url, payload, format="json")
@@ -89,7 +94,7 @@ class OutfitRecommendationTests(TestCase):
         response = self.client.post(self.url, self.payload(), format="json")
         self.assertEqual(response.status_code, 200)
         for key in (
-            "recommendation_available", "profile_id", "occasion", "body_shape",
+            "recommendation_available", "profile_id", "wardrobe_empty", "occasion", "body_shape",
             "season_applied", "missing_items", "recommendation", "message", "explanation",
         ):
             self.assertIn(key, response.data)
@@ -102,3 +107,29 @@ class OutfitRecommendationTests(TestCase):
         )
         response = self.client.post(self.url, self.payload(), format="json")
         self.assertEqual(response.data["recommendation"]["selected_one_piece"]["id"], dress.id)
+
+    def test_forged_profile_id_is_ignored_and_other_users_data_is_isolated(self):
+        other_user = get_user_model().objects.create_user(username="other-outfit-user")
+        other_profile = Profile.objects.create(user=other_user)
+        other_top = WardrobeItem.objects.create(
+            profile=other_profile, name="Other top", category=WardrobeItem.Category.TOP
+        )
+        WardrobeItem.objects.create(
+            profile=other_profile, name="Other bottom", category=WardrobeItem.Category.BOTTOM
+        )
+
+        response = self.client.post(
+            self.url, self.payload(profile_id=other_profile.id), format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["profile_id"], self.profile.id)
+        self.assertEqual(response.data["recommendation"]["selected_top"]["id"], self.top.id)
+        self.assertNotEqual(response.data["recommendation"]["selected_top"]["id"], other_top.id)
+
+    def test_empty_wardrobe_is_reported_clearly(self):
+        self.top.delete()
+        self.bottom.delete()
+        response = self.client.post(self.url, self.payload(), format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["wardrobe_empty"])
+        self.assertFalse(response.data["recommendation_available"])

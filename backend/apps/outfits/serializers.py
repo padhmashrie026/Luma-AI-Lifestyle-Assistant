@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.body_shape.models import BodyMeasurement, Profile
+from apps.body_shape.models import BodyMeasurement
 from .models import Outfit
 
 
@@ -18,14 +18,8 @@ BODY_SHAPE_CHOICES = [
 
 
 class OutfitRecommendationRequestSerializer(serializers.Serializer):
-    profile_id = serializers.IntegerField(min_value=1)
     body_shape = BodyShapeChoiceField(choices=BODY_SHAPE_CHOICES, required=False)
     occasion = serializers.ChoiceField(choices=Outfit.Occasion.choices)
-
-    def validate_profile_id(self, value):
-        if not Profile.objects.filter(pk=value).exists():
-            raise serializers.ValidationError("No profile exists with this ID.")
-        return value
 
     def validate(self, attrs):
         if "season" in self.initial_data:

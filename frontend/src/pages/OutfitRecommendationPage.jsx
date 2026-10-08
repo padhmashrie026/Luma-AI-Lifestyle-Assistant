@@ -31,7 +31,6 @@ function OutfitItem({ title, item }) {
 }
 
 function OutfitRecommendationPage() {
-  const [profileId, setProfileId] = useState('')
   const [occasion, setOccasion] = useState('')
   const [bodyShape, setBodyShape] = useState('')
   const [errors, setErrors] = useState({})
@@ -44,13 +43,11 @@ function OutfitRecommendationPage() {
     setResult(null)
     setRequestError('')
     const nextErrors = {}
-    if (!profileId.trim()) nextErrors.profileId = 'Profile ID is required.'
-    else if (!/^\d+$/.test(profileId.trim()) || !Number.isSafeInteger(Number(profileId)) || Number(profileId) < 1) nextErrors.profileId = 'Enter a valid positive profile ID.'
     if (!occasion) nextErrors.occasion = 'Choose an occasion.'
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) return
 
-    const request = { profile_id: Number(profileId), occasion }
+    const request = { occasion }
     if (bodyShape) request.body_shape = bodyShape
     setIsLoading(true)
     try {
@@ -67,7 +64,6 @@ function OutfitRecommendationPage() {
   }
 
   const reset = () => {
-    setProfileId('')
     setOccasion('')
     setBodyShape('')
     setErrors({})
@@ -79,6 +75,12 @@ function OutfitRecommendationPage() {
   const selectedPieces = recommendation
     ? recommendationSlots.filter(([key]) => recommendation[key])
     : []
+  const insufficientTitle = result?.wardrobe_empty
+    ? 'Your wardrobe is empty'
+    : 'There aren’t enough available pieces yet'
+  const insufficientMessage = result?.wardrobe_empty
+    ? 'Add some items to your wardrobe before asking for an outfit recommendation.'
+    : result?.message
 
   return <div className="outfit-page">
     <section className="dashboard-welcome outfit-welcome">
@@ -90,11 +92,6 @@ function OutfitRecommendationPage() {
         <SectionHeader title="Set your preferences" description="Choose an occasion and optionally add a styling shape." />
         <form onSubmit={submit} noValidate>
           <div className="outfit-form-fields">
-            <div className="outfit-field outfit-profile-field">
-              <label htmlFor="outfit-profile-id">Profile ID <span>Required</span></label>
-              <input id="outfit-profile-id" type="number" min="1" step="1" value={profileId} onChange={(event) => { setProfileId(event.target.value); setErrors((current) => ({ ...current, profileId: undefined })) }} aria-invalid={Boolean(errors.profileId)} aria-describedby={errors.profileId ? 'outfit-profile-error' : 'outfit-profile-help'} />
-              {errors.profileId ? <small className="outfit-field-error" id="outfit-profile-error" role="alert">{errors.profileId}</small> : <small className="outfit-field-help" id="outfit-profile-help">Profile ID is used temporarily to find your wardrobe until sign-in is available.</small>}
-            </div>
             <div className="outfit-field">
               <label htmlFor="outfit-occasion">Occasion <span>Required</span></label>
               <select id="outfit-occasion" value={occasion} onChange={(event) => { setOccasion(event.target.value); setErrors((current) => ({ ...current, occasion: undefined })) }} aria-invalid={Boolean(errors.occasion)} aria-describedby={errors.occasion ? 'outfit-occasion-error' : undefined}>
@@ -122,7 +119,7 @@ function OutfitRecommendationPage() {
       <section className="outfit-result-section" aria-live="polite" aria-busy={isLoading}>
         {isLoading ? <Card className="outfit-result-empty"><p>Checking your available wardrobe…</p></Card>
           : !result ? <Card className="outfit-result-empty"><span className="outfit-empty-mark" aria-hidden="true">✦</span><h3>Your outfit will appear here</h3><p>Choose an occasion to ask Django for a recommendation from your saved wardrobe.</p></Card>
-          : !result.recommendation_available ? <Card className="outfit-insufficient-card"><span className="outfit-result-kicker">Wardrobe check</span><h3>There aren’t enough available pieces yet</h3><p>{result.message}</p>{result.missing_items?.length > 0 && <div className="missing-items"><span>Needed to complete a look</span><ul>{result.missing_items.map((item) => <li key={item}>{item}</li>)}</ul></div>}<p className="outfit-explanation">{result.explanation}</p></Card>
+          : !result.recommendation_available ? <Card className="outfit-insufficient-card"><span className="outfit-result-kicker">Wardrobe check</span><h3>{insufficientTitle}</h3><p>{insufficientMessage}</p>{!result.wardrobe_empty && result.missing_items?.length > 0 && <div className="missing-items"><span>Needed to complete a look</span><ul>{result.missing_items.map((item) => <li key={item}>{item}</li>)}</ul></div>}<p className="outfit-explanation">{result.explanation}</p></Card>
           : <Card className="outfit-result-card">
             <span className="outfit-result-kicker">Your suggestion</span>
             <h3>Ready for {occasions.find(([value]) => value === result.occasion)?.[1]?.toLowerCase() || result.occasion}</h3>

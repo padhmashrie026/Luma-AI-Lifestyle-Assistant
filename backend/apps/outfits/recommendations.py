@@ -35,6 +35,7 @@ def _latest_saved_shape(profile_id):
 
 def recommend_outfit(profile_id, occasion, body_shape=None):
     """Use available wardrobe items, preferring a complete saved look for occasion."""
+    wardrobe_empty = not WardrobeItem.objects.filter(profile_id=profile_id).exists()
     available = list(
         WardrobeItem.objects.filter(
             profile_id=profile_id,
@@ -112,6 +113,7 @@ def recommend_outfit(profile_id, occasion, body_shape=None):
 
     return {
         "recommendation_available": combination is not None,
+        "wardrobe_empty": wardrobe_empty,
         "profile_id": profile_id,
         "occasion": occasion,
         "body_shape": shape,
