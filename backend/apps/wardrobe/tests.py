@@ -9,6 +9,7 @@ from .models import WardrobeItem
 class WardrobeItemApiTests(TestCase):
     def setUp(self):
         user = get_user_model().objects.create_user(username="wardrobe-test")
+        self.user = user
         self.profile = Profile.objects.create(user=user)
         self.client = APIClient()
         self.item = WardrobeItem.objects.create(
@@ -18,6 +19,7 @@ class WardrobeItemApiTests(TestCase):
             color="Blue",
         )
         self.collection_url = "/api/wardrobe/items/"
+        self.client.force_authenticate(user)
 
     def test_list_items(self):
         response = self.client.get(self.collection_url)
@@ -25,20 +27,27 @@ class WardrobeItemApiTests(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["name"], "Blue shirt")
 
+    def test_anonymous_access_is_rejected(self):
+        self.client.force_authenticate(user=None)
+        self.assertIn(self.client.get(self.collection_url).status_code, (401, 403))
+        self.assertIn(self.client.post(self.collection_url, {}).status_code, (401, 403))
+
     def test_create_item(self):
         response = self.client.post(
             self.collection_url,
             {
-                "profile": self.profile.id,
+                "profile": 99999,
+                "profile_id": 99999,
                 "name": "Black trousers",
                 "category": "bottom",
                 "color": "Black",
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(response.data["name"], "Black trousers")
         self.assertEqual(response.data["status"], "available")
+        self.assertEqual(WardrobeItem.objects.get(name="Black trousers").profile, self.profile)
 
     def test_retrieve_item(self):
         response = self.client.get(f"{self.collection_url}{self.item.id}/")
@@ -63,7 +72,6 @@ class WardrobeItemApiTests(TestCase):
         response = self.client.post(
             self.collection_url,
             {
-                "profile": self.profile.id,
                 "name": "   ",
                 "category": "seasonal",
             },
@@ -72,6 +80,53 @@ class WardrobeItemApiTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn("name", response.data)
         self.assertIn("category", response.data)
+
+    def test_forged_profile_fields_cannot_change_ownership(self):
+        other_user = get_user_model().objects.create_user(username="wardrobe-other")
+        other_profile = Profile.objects.create(user=other_user)
+        response = self.client.post(
+            self.collection_url,
+            {
+                "profile": other_profile.id,
+                "profile_id": other_profile.id,
+                "name": "Own item",
+                "category": "top",
+                "color": "",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201, response.data)
+        created = WardrobeItem.objects.get(name="Own item")
+        self.assertEqual(created.profile, self.profile)
+        self.assertNotEqual(created.profile, other_profile)
+
+    def test_users_only_see_and_access_their_own_items(self):
+        other_user = get_user_model().objects.create_user(username="wardrobe-other")
+        other_profile = Profile.objects.create(user=other_user)
+        other_item = WardrobeItem.objects.create(
+            profile=other_profile, name="Other coat", category=WardrobeItem.Category.OUTERWEAR
+        )
+        listed = self.client.get(self.collection_url)
+        self.assertEqual([row["id"] for row in listed.data], [self.item.id])
+        detail_url = f"{self.collection_url}{other_item.id}/"
+        self.assertEqual(self.client.get(detail_url).status_code, 404)
+        self.assertEqual(
+            self.client.patch(detail_url, {"name": "Stolen"}, format="json").status_code,
+            404,
+        )
+        self.assertEqual(self.client.delete(detail_url).status_code, 404)
+        other_item.refresh_from_db()
+        self.assertEqual(other_item.name, "Other coat")
+
+    def test_update_and_delete_own_item(self):
+        updated = self.client.patch(
+            f"{self.collection_url}{self.item.id}/", {"color": "Navy"}, format="json"
+        )
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.data["color"], "Navy")
+        deleted = self.client.delete(f"{self.collection_url}{self.item.id}/")
+        self.assertEqual(deleted.status_code, 204)
+        self.assertFalse(WardrobeItem.objects.filter(pk=self.item.pk).exists())
 
     def test_filter_by_category_and_color(self):
         WardrobeItem.objects.create(

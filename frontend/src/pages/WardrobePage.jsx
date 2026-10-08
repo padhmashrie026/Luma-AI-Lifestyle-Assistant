@@ -17,7 +17,7 @@ const categories = [
 const statuses = [
   ['available', 'Available'], ['laundry', 'In laundry'], ['repair', 'Needs repair'], ['archived', 'Archived'],
 ]
-const emptyForm = { profile: '', name: '', category: '', color: '', brand: '', size_label: '', status: 'available', notes: '' }
+const emptyForm = { name: '', category: '', color: '', brand: '', size_label: '', status: 'available', notes: '' }
 
 function WardrobePage() {
   const [items, setItems] = useState([])
@@ -71,7 +71,7 @@ function WardrobePage() {
       const item = await getWardrobeItem(id)
       setEditingId(id)
       setForm({
-        profile: String(item.profile), name: item.name, category: item.category,
+        name: item.name, category: item.category,
         color: item.color || '', brand: item.brand || '', size_label: item.size_label || '',
         status: item.status, notes: item.notes || '',
       })
@@ -96,8 +96,6 @@ function WardrobePage() {
 
   const validateForm = () => {
     const errors = {}
-    if (!form.profile.trim()) errors.profile = 'Profile ID is required.'
-    else if (!/^\d+$/.test(form.profile.trim()) || !Number.isSafeInteger(Number(form.profile)) || Number(form.profile) < 1) errors.profile = 'Enter a valid positive profile ID.'
     if (!form.name.trim()) errors.name = 'Item name is required.'
     if (!form.category) errors.category = 'Choose a category.'
     return errors
@@ -108,7 +106,7 @@ function WardrobePage() {
     const errors = validateForm()
     setFormErrors(errors)
     if (Object.keys(errors).length) return
-    const payload = { ...form, profile: Number(form.profile), name: form.name.trim() }
+    const payload = { ...form, name: form.name.trim() }
     setIsSaving(true)
     setNotice('')
     try {
@@ -163,7 +161,6 @@ function WardrobePage() {
       <SectionHeader title={editingId ? 'Edit wardrobe item' : 'Add a wardrobe item'} description="Fields marked required are needed to save an item." />
       <form onSubmit={handleSave} noValidate>
         <div className="wardrobe-form-grid">
-          <div className="wardrobe-field"><label htmlFor="wardrobe-profile">Profile ID <span>Required</span></label><input id="wardrobe-profile" name="profile" type="number" min="1" step="1" value={form.profile} onChange={handleFieldChange} aria-invalid={Boolean(formErrors.profile)} aria-describedby={formErrors.profile ? 'wardrobe-profile-error' : 'wardrobe-profile-help'} />{formErrors.profile ? <small className="wardrobe-field-error" id="wardrobe-profile-error">{formErrors.profile}</small> : <small className="wardrobe-field-help" id="wardrobe-profile-help">Use an existing profile ID.</small>}</div>
           <div className="wardrobe-field"><label htmlFor="wardrobe-name">Item name <span>Required</span></label><input id="wardrobe-name" name="name" type="text" maxLength="100" value={form.name} onChange={handleFieldChange} aria-invalid={Boolean(formErrors.name)} aria-describedby={formErrors.name ? 'wardrobe-name-error' : undefined} />{formErrors.name && <small className="wardrobe-field-error" id="wardrobe-name-error">{formErrors.name}</small>}</div>
           <div className="wardrobe-field"><label htmlFor="wardrobe-category">Category <span>Required</span></label><select id="wardrobe-category" name="category" value={form.category} onChange={handleFieldChange} aria-invalid={Boolean(formErrors.category)} aria-describedby={formErrors.category ? 'wardrobe-category-error' : undefined}><option value="">Choose a category</option>{categories.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{formErrors.category && <small className="wardrobe-field-error" id="wardrobe-category-error">{formErrors.category}</small>}</div>
           <div className="wardrobe-field"><label htmlFor="wardrobe-color">Color</label><input id="wardrobe-color" name="color" type="text" maxLength="40" value={form.color} onChange={handleFieldChange} /></div>
