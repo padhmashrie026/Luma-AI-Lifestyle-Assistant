@@ -15,9 +15,20 @@ export function getExpense(id) {
   return apiRequest(`${EXPENSES_PATH}${id}/`)
 }
 
-export function getExpenseSummary(profileId, month) {
-  const query = new URLSearchParams({ profile_id: profileId, month })
+export function getExpenseSummary(month) {
+  const query = new URLSearchParams({ month })
   return apiRequest(`${EXPENSES_PATH}summary/?${query}`)
+}
+
+export function getBudgetCategories() {
+  return apiRequest(`${EXPENSES_PATH}categories/`)
+}
+
+export function createBudgetCategory(category) {
+  return apiRequest(`${EXPENSES_PATH}categories/`, {
+    method: 'POST',
+    body: JSON.stringify(category),
+  })
 }
 
 export function createExpense(expense) {

@@ -2,16 +2,18 @@ from datetime import date
 import re
 
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Expense
-from .serializers import ExpenseSerializer, ExpenseSummaryQuerySerializer
+from .models import BudgetCategory, Expense
+from .serializers import BudgetCategorySerializer, ExpenseSerializer, ExpenseSummaryQuerySerializer
 from .summaries import build_expense_summary
+from apps.body_shape.models import Profile
 
 
 def _positive_query_integer(params, key):
@@ -42,13 +44,14 @@ def _query_date(params, key):
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
     serializer_class = ExpenseSerializer
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+
+    def get_profile(self):
+        return get_object_or_404(Profile, user=self.request.user)
 
     def get_queryset(self):
-        expenses = Expense.objects.select_related("profile", "category", "daily_plan").all()
+        expenses = Expense.objects.select_related("profile", "category", "daily_plan").filter(profile=self.get_profile())
         params = self.request.query_params
-        profile_id = _positive_query_integer(params, "profile_id")
         category_id = _positive_query_integer(params, "category_id")
         daily_plan_id = _positive_query_integer(params, "daily_plan_id")
         start_date = _query_date(params, "start_date")
@@ -68,8 +71,6 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
             expenses = expenses.filter(spent_on__lte=end_date)
         if start_date and end_date and start_date > end_date:
             raise ValidationError({"date_range": "start_date must be on or before end_date."})
-        if profile_id:
-            expenses = expenses.filter(profile_id=profile_id)
         if category_id:
             expenses = expenses.filter(category_id=category_id)
         category_name = params.get("category", "").strip()
@@ -82,17 +83,21 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
             expenses = expenses.filter(Q(description__icontains=search) | Q(notes__icontains=search))
         return expenses
 
+    def perform_create(self, serializer):
+        serializer.save(profile=self.get_profile())
+
 
 class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Expense.objects.select_related("profile", "category", "daily_plan").all()
     serializer_class = ExpenseSerializer
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        return Expense.objects.select_related("profile", "category", "daily_plan").filter(profile=profile)
 
 
 class ExpenseSummaryView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = []
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = ExpenseSummaryQuerySerializer(data=request.query_params)
@@ -100,4 +105,19 @@ class ExpenseSummaryView(APIView):
         values = serializer.validated_data
         month_text = values.get("month") or timezone.localdate().strftime("%Y-%m")
         month = date.fromisoformat(f"{month_text}-01")
-        return Response(build_expense_summary(values["profile_id"], month))
+        profile = get_object_or_404(Profile, user=request.user)
+        return Response(build_expense_summary(profile.id, month))
+
+
+class BudgetCategoryListCreateView(generics.ListCreateAPIView):
+    serializer_class = BudgetCategorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_profile(self):
+        return get_object_or_404(Profile, user=self.request.user)
+
+    def get_queryset(self):
+        return BudgetCategory.objects.filter(profile=self.get_profile())
+
+    def perform_create(self, serializer):
+        serializer.save(profile=self.get_profile())
