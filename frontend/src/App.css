@@ -423,3 +423,26 @@
   .topbar-title { font-size: 14px; }.topbar-actions { gap: 3px; }.search-box { width: 34px; padding: 8px; border-color: transparent; background: transparent; }.search-box input, .search-shortcut { position: absolute; width: 1px; height: 1px; opacity: 0; }.search-box:focus-within { position: absolute; right: 112px; left: 54px; z-index: 2; width: auto; border-color: var(--line); background: white; }.search-box:focus-within input { position: static; width: 100%; height: auto; opacity: 1; }.dashboard-welcome { flex-direction: column; gap: 13px; }.welcome-title { font-size: 25px; }.overview-grid { grid-template-columns: 1fr; gap: 11px; }.summary-card, .summary-card:last-child { grid-column: auto; min-height: 154px; }.actions-grid { grid-template-columns: 1fr 1fr; gap: 9px; }.action-button { align-items: flex-start; gap: 8px; padding: 11px 9px; }.action-description { font-size: 8px; }.weekly-placeholder { grid-template-columns: 1fr; gap: 13px; }.week-days { justify-content: space-between; }.section-block { margin-top: 24px; }.measurement-card, .result-card { padding: 17px; }.wardrobe-welcome { align-items: flex-start; }.wardrobe-form-card { padding: 17px; }.wardrobe-filter-form { grid-template-columns: 1fr 1fr; gap: 9px; }.wardrobe-search-field { grid-column: span 2; }.wardrobe-filter-actions { grid-column: span 2; }.wardrobe-items-grid { grid-template-columns: 1fr; }.outfit-request-card, .outfit-result-card, .outfit-insufficient-card { padding: 17px; }.outfit-pieces-grid { grid-template-columns: 1fr; }.diet-request-card, .diet-unavailable-card, .diet-grocery-card, .diet-budget-card, .diet-preparation-card { padding: 16px; }.diet-request-form { grid-template-columns: 1fr; }.diet-request-actions { grid-column: auto; flex-wrap: wrap; }.diet-plan-heading { align-items: flex-start; flex-direction: column; }.diet-plan-heading h3 { font-size: 17px; }.diet-preparation-card > ul > li { grid-template-columns: 1fr; gap: 5px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+
+/* Authentication */
+.auth-page { display: grid; min-height: 100vh; place-items: center; background: radial-gradient(ellipse at 15% 10%, #edf4ee 0, transparent 40%), #f7f8f6; padding: 28px 18px; }
+.auth-panel { width: min(100%, 440px); border: 1px solid var(--line); border-radius: 17px; background: var(--surface); padding: 34px; box-shadow: 0 14px 45px rgb(34 54 41 / 7%); }
+.auth-brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; }
+.auth-intro { margin: 36px 0 25px; }
+.auth-intro .eyebrow { margin-bottom: 9px; }
+.auth-intro h1, .auth-status-card h1 { margin: 0; color: var(--ink); font-size: 25px; letter-spacing: -.7px; }
+.auth-intro > p:last-child, .auth-status-card > p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.auth-form { display: grid; gap: 16px; }
+.auth-field label { display: block; margin-bottom: 6px; color: #59685e; font-size: 11px; font-weight: 700; }
+.auth-field input { width: 100%; min-height: 43px; border: 1px solid #e0e7e1; border-radius: 8px; background: #fff; padding: 9px 11px; color: var(--ink); font: inherit; font-size: 12px; }
+.auth-field input:focus { border-color: #7ba789; outline: 0; box-shadow: 0 0 0 3px rgb(123 167 137 / 15%); }
+.auth-submit { width: 100%; justify-content: center; min-height: 43px; margin-top: 2px; }
+.auth-error { margin: 0; border: 1px solid #f0d4d1; border-radius: 8px; background: #fff7f6; padding: 10px 12px; color: #a33d36; font-size: 11px; line-height: 1.5; }
+.auth-switch { margin: 21px 0 0; color: #78847b; font-size: 11px; text-align: center; }
+.auth-switch a { color: #456d50; font-weight: 700; text-decoration: none; }
+.auth-switch a:hover { text-decoration: underline; }
+.auth-status { display: grid; min-height: 100vh; place-items: center; padding: 22px; color: var(--muted); font-size: 13px; }
+.auth-status-card { width: min(100%, 420px); border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 26px; }
+.auth-status-card .button { margin-top: 18px; }
+.auth-logout { min-height: 34px; padding: 7px 11px; font-size: 10px; }
+@media (max-width: 540px) { .auth-panel { padding: 25px 21px; }.auth-intro { margin-top: 29px; }.auth-intro h1 { font-size: 23px; }.auth-logout { padding-inline: 8px; } }

@@ -1,28 +1,17 @@
 import { apiRequest } from './apiClient.js'
 
-function scopedPath(path, profileId) {
-  const query = new URLSearchParams({ profile_id: profileId })
-  return `${path}?${query}`
+export function getProfile() {
+  return apiRequest('/profile/')
 }
 
-export function getProfile(profileId) {
-  return apiRequest(scopedPath('/profile/', profileId))
+export function updateProfile(fields) {
+  return apiRequest('/profile/', { method: 'PATCH', body: JSON.stringify(fields) })
 }
 
-export function updateProfile(profileId, fields) {
-  return apiRequest(scopedPath('/profile/', profileId), {
-    method: 'PATCH',
-    body: JSON.stringify(fields),
-  })
+export function getSettings() {
+  return apiRequest('/settings/')
 }
 
-export function getSettings(profileId) {
-  return apiRequest(scopedPath('/settings/', profileId))
-}
-
-export function updateSettings(profileId, fields) {
-  return apiRequest(scopedPath('/settings/', profileId), {
-    method: 'PATCH',
-    body: JSON.stringify(fields),
-  })
+export function updateSettings(fields) {
+  return apiRequest('/settings/', { method: 'PATCH', body: JSON.stringify(fields) })
 }

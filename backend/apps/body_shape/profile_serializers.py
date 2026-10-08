@@ -70,11 +70,9 @@ class ProfileSerializer(StrictInputModelSerializer):
 
 
 class SettingsSerializer(StrictInputModelSerializer):
-    profile_id = serializers.IntegerField(source="id", read_only=True)
-
     class Meta:
         model = Profile
-        fields = ["profile_id", "currency_code"]
+        fields = ["currency_code"]
 
     def validate_currency_code(self, value):
         value = value.strip().upper()

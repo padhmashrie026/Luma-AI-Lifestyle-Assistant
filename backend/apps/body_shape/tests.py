@@ -4,7 +4,7 @@ from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APIClient
 from io import StringIO
 
-from .models import Profile
+from .models import BodyMeasurement, Profile
 from .calculations import calculate_body_shape
 from ..diet.models import Meal, MealPlan, MealPlanItem
 from ..expenses.models import BudgetCategory, Expense, Income
@@ -63,8 +63,9 @@ class ProfileAndSettingsApiTests(TestCase):
         )
         self.profile = Profile.objects.create(user=self.user, display_name="Old name")
         self.client = APIClient()
-        self.profile_url = f"/api/profile/?profile_id={self.profile.id}"
-        self.settings_url = f"/api/settings/?profile_id={self.profile.id}"
+        self.profile_url = "/api/profile/"
+        self.settings_url = "/api/settings/"
+        self.client.force_authenticate(self.user)
 
     def test_retrieve_profile_returns_existing_profile_and_user_fields(self):
         response = self.client.get(self.profile_url)
@@ -115,19 +116,29 @@ class ProfileAndSettingsApiTests(TestCase):
         self.assertEqual(unsupported.status_code, 400)
         self.assertIn("age", unsupported.data)
 
-    def test_profile_requires_existing_profile_id(self):
-        missing = self.client.get("/api/profile/")
-        self.assertEqual(missing.status_code, 400)
-        self.assertIn("profile_id", missing.data)
-        invalid = self.client.get("/api/profile/?profile_id=0")
-        self.assertEqual(invalid.status_code, 400)
-        unknown = self.client.get("/api/profile/?profile_id=999999")
-        self.assertEqual(unknown.status_code, 404)
+    def test_profile_requests_ignore_forged_profile_ids(self):
+        other = get_user_model().objects.create_user(username="another-profile")
+        other_profile = Profile.objects.create(user=other, display_name="Other")
+        response = self.client.get(f"/api/profile/?profile_id={other_profile.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], self.profile.id)
+        updated = self.client.patch(
+            f"/api/profile/?profile_id={other_profile.id}",
+            {"display_name": "Changed own", "email": "own@example.com"},
+            format="json",
+        )
+        self.assertEqual(updated.status_code, 200)
+        other_profile.refresh_from_db()
+        self.assertEqual(other_profile.display_name, "Other")
+
+    def test_profile_requires_authentication(self):
+        response = APIClient().get(self.profile_url)
+        self.assertIn(response.status_code, (401, 403))
 
     def test_retrieve_and_update_settings_use_existing_currency_preference(self):
         retrieved = self.client.get(self.settings_url)
         self.assertEqual(retrieved.status_code, 200)
-        self.assertEqual(retrieved.data, {"profile_id": self.profile.id, "currency_code": "INR"})
+        self.assertEqual(retrieved.data, {"currency_code": "INR"})
         updated = self.client.patch(
             self.settings_url, {"currency_code": " usd "}, format="json"
         )
@@ -147,6 +158,63 @@ class ProfileAndSettingsApiTests(TestCase):
         unknown = self.client.patch(self.settings_url, {"theme": "dark"}, format="json")
         self.assertEqual(unknown.status_code, 400)
         self.assertIn("theme", unknown.data)
+
+
+class BodyMeasurementOwnershipTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user_a = User.objects.create_user(username="measure-a")
+        self.user_b = User.objects.create_user(username="measure-b")
+        self.profile_a = Profile.objects.create(user=self.user_a)
+        self.profile_b = Profile.objects.create(user=self.user_b)
+        self.client = APIClient()
+        self.url = "/api/body-shape/measurements/"
+        self.payload = {
+            "measured_on": "2026-10-04", "shoulder_cm": 90, "bust_cm": 90,
+            "waist_cm": 65, "hip_cm": 92, "styling_shape": "hourglass",
+        }
+
+    def test_authenticated_user_can_create_read_and_update_measurements(self):
+        self.client.force_authenticate(self.user_a)
+        created = self.client.post(self.url, self.payload, format="json")
+        self.assertEqual(created.status_code, 201)
+        self.assertEqual(BodyMeasurement.objects.get().profile, self.profile_a)
+        retrieved = self.client.get(self.url)
+        self.assertEqual(retrieved.status_code, 200)
+        self.assertEqual(retrieved.data["styling_shape"], "hourglass")
+        updated = self.client.patch(self.url, {"styling_shape": "pear"}, format="json")
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.data["styling_shape"], "pear")
+        self.assertEqual(BodyMeasurement.objects.count(), 1)
+
+    def test_measurements_require_authentication(self):
+        for response in (
+            self.client.get(self.url),
+            self.client.post(self.url, self.payload, format="json"),
+        ):
+            self.assertIn(response.status_code, (401, 403))
+
+    def test_user_cannot_read_or_update_another_users_measurements(self):
+        BodyMeasurement.objects.create(profile=self.profile_b, **self.payload)
+        self.client.force_authenticate(self.user_a)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+        self.assertEqual(
+            self.client.patch(self.url, {"styling_shape": "pear"}, format="json").status_code,
+            404,
+        )
+        self.assertEqual(BodyMeasurement.objects.get().styling_shape, "hourglass")
+
+    def test_new_registration_has_no_demo_measurements(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {"username": "new-measurer", "email": "new@example.com",
+             "password": "Qv9!mB2#pL7x", "password_confirmation": "Qv9!mB2#pL7x"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        new_user = get_user_model().objects.get(username="new-measurer")
+        self.assertEqual(BodyMeasurement.objects.filter(profile__user=new_user).count(), 0)
+        self.assertEqual(BodyMeasurement.objects.filter(profile=self.profile_b).count(), 0)
 
 
 class DemoSeederCommandTests(TestCase):

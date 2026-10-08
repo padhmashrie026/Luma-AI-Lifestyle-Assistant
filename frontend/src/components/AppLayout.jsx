@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import Header from './Header.jsx'
 import Sidebar from './Sidebar.jsx'
 
-function AppLayout({ title, currentPath, onNavigate, children }) {
+function AppLayout({ title, currentPath, onNavigate, user, onLogout, children }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -14,7 +14,7 @@ function AppLayout({ title, currentPath, onNavigate, children }) {
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [menuOpen])
 
-  return <div className="app-shell"><Sidebar currentPath={currentPath} onNavigate={onNavigate} isOpen={menuOpen} onClose={() => setMenuOpen(false)} /><div className="app-main"><Header title={title} onMenuToggle={() => setMenuOpen((open) => !open)} onNavigate={onNavigate} /><main className="page-content">{children}</main></div></div>
+  return <div className="app-shell"><Sidebar currentPath={currentPath} onNavigate={onNavigate} isOpen={menuOpen} onClose={() => setMenuOpen(false)} /><div className="app-main"><Header title={title} onMenuToggle={() => setMenuOpen((open) => !open)} onNavigate={onNavigate} user={user} onLogout={onLogout} /><main className="page-content">{children}</main></div></div>
 }
 
 export default AppLayout

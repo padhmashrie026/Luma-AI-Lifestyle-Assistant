@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Button from '../components/Button.jsx'
 import Card from '../components/Card.jsx'
 import SectionHeader from '../components/SectionHeader.jsx'
-import { calculateBodyShape } from '../services/bodyShapeService.js'
+import { calculateBodyShape, getBodyMeasurements, saveBodyMeasurements } from '../services/bodyShapeService.js'
 
 const fields = [
   { name: 'shoulder', label: 'Shoulder' },
@@ -17,6 +17,24 @@ function BodyShapePage() {
   const [result, setResult] = useState(null)
   const [requestError, setRequestError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isReading, setIsReading] = useState(true)
+  const [hasSavedMeasurements, setHasSavedMeasurements] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    getBodyMeasurements().then((saved) => {
+      if (!active) return
+      setMeasurements({
+        shoulder: saved.shoulder_cm || '', bust: saved.bust_cm || '',
+        waist: saved.waist_cm || '', hip: saved.hip_cm || '',
+      })
+      setHasSavedMeasurements(true)
+    }).catch((error) => {
+      if (!active) return
+      if (error.status !== 404) setRequestError(error.message)
+    }).finally(() => { if (active) setIsReading(false) })
+    return () => { active = false }
+  }, [])
 
   const validate = () => {
     const nextErrors = {}
@@ -53,6 +71,15 @@ function BodyShapePage() {
       if (!response || typeof response.estimated_body_shape !== 'string' || typeof response.styling_suggestion !== 'string') {
         throw new Error('The server returned an unexpected result. Please try again.')
       }
+      const saved = await saveBodyMeasurements({
+        measured_on: new Date().toISOString().slice(0, 10),
+        shoulder_cm: Number(measurements.shoulder),
+        bust_cm: Number(measurements.bust),
+        waist_cm: Number(measurements.waist),
+        hip_cm: Number(measurements.hip),
+        styling_shape: response.estimated_body_shape,
+      })
+      setHasSavedMeasurements(true)
       setResult(response)
     } catch (error) {
       setRequestError(error.message)
@@ -75,6 +102,8 @@ function BodyShapePage() {
     <div className="body-shape-layout">
       <Card className="measurement-card">
         <SectionHeader title="Your measurements" description="Measure around the fullest area. Enter each value in centimetres." />
+        {isReading && <p className="measurement-help" role="status">Loading your saved measurements…</p>}
+        {!isReading && !hasSavedMeasurements && !requestError && <p className="measurement-help">You have no saved measurements yet. Calculate your shape to save them to your account.</p>}
         <form onSubmit={handleSubmit} noValidate>
           <div className="measurement-fields">
             {fields.map(({ name, label }) => <div className="measurement-field" key={name}>
