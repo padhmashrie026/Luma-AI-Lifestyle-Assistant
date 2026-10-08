@@ -11,10 +11,11 @@ from .models import FoodPreference, Ingredient, Meal, MealIngredient
 
 class WeeklyMealPlanApiTests(TestCase):
     def setUp(self):
-        user = get_user_model().objects.create_user(username="meal-planner-test")
-        self.profile = Profile.objects.create(user=user)
+        self.user = get_user_model().objects.create_user(username="meal-planner-test")
+        self.profile = Profile.objects.create(user=self.user)
         self.client = APIClient()
         self.url = "/api/diet/plan/"
+        self.client.force_authenticate(self.user)
         self.week_start = date(2026, 10, 5)
 
         self.oats = Ingredient.objects.create(name="Oats", default_unit="g")
@@ -44,9 +45,14 @@ class WeeklyMealPlanApiTests(TestCase):
         return meal
 
     def _request(self, **overrides):
-        payload = {"profile_id": self.profile.id, "week_start": self.week_start.isoformat()}
+        payload = {"week_start": self.week_start.isoformat()}
         payload.update(overrides)
         return self.client.post(self.url, payload, format="json")
+
+    def test_anonymous_access_is_rejected(self):
+        self.client.force_authenticate(user=None)
+        response = self._request()
+        self.assertIn(response.status_code, (401, 403))
 
     def test_valid_weekly_plan_generation(self):
         response = self._request()
@@ -98,11 +104,8 @@ class WeeklyMealPlanApiTests(TestCase):
 
     def test_invalid_inputs_are_rejected(self):
         for payload in (
-            {"week_start": self.week_start.isoformat()},
-            {"profile_id": self.profile.id},
-            {"profile_id": self.profile.id, "week_start": "not-a-date"},
-            {"profile_id": 99999, "week_start": self.week_start.isoformat()},
-            {"profile_id": 0, "week_start": self.week_start.isoformat()},
+            {},
+            {"week_start": "not-a-date"},
         ):
             with self.subTest(payload=payload):
                 response = self.client.post(self.url, payload, format="json")
@@ -122,3 +125,49 @@ class WeeklyMealPlanApiTests(TestCase):
         self.assertFalse(response.data["plan_available"])
         self.assertEqual(response.data["missing_meal_types"], ["dinner"])
         self.assertEqual(response.data["grocery_list"], [])
+
+    def test_new_user_with_no_meals_gets_empty_result(self):
+        user = get_user_model().objects.create_user(username="new-diet-user")
+        Profile.objects.create(user=user)
+        self.client.force_authenticate(user)
+        response = self._request()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data["plan_available"])
+        self.assertTrue(response.data["meals_empty"])
+        self.assertEqual(response.data["weekly_plan"], [])
+
+    def test_forged_profile_fields_are_ignored_and_other_users_data_is_isolated(self):
+        other_user = get_user_model().objects.create_user(username="other-diet-user")
+        other_profile = Profile.objects.create(user=other_user)
+        other_meal = Meal.objects.create(
+            profile=other_profile, name="Other user's breakfast", meal_type=Meal.MealType.BREAKFAST
+        )
+        FoodPreference.objects.create(
+            profile=other_profile,
+            preference_type=FoodPreference.PreferenceType.AVOIDS,
+            name="Oat",
+        )
+        response = self.client.post(
+            self.url,
+            {"week_start": self.week_start.isoformat(), "profile_id": other_profile.id,
+             "profile": other_profile.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data["plan_available"])
+        breakfast_ids = {
+            day["meals"]["breakfast"]["id"] for day in response.data["weekly_plan"]
+            if day["meals"]["breakfast"]
+        }
+        self.assertNotIn(other_meal.id, breakfast_ids)
+        self.assertEqual(response.data["preferences_applied"]["avoided_terms_excluded"], [])
+        other_meal.refresh_from_db()
+        self.assertEqual(other_meal.name, "Other user's breakfast")
+
+    def test_demo_meals_and_preferences_are_not_modified_by_planning(self):
+        before_meals = list(Meal.objects.filter(profile=self.profile).values_list("id", "name"))
+        before_preferences = list(FoodPreference.objects.filter(profile=self.profile).values_list("id", "name"))
+        response = self._request()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(Meal.objects.filter(profile=self.profile).values_list("id", "name")), before_meals)
+        self.assertEqual(list(FoodPreference.objects.filter(profile=self.profile).values_list("id", "name")), before_preferences)

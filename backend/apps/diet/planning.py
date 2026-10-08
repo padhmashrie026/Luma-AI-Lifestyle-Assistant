@@ -111,6 +111,7 @@ def _build_grocery_list(planned_meals):
 
 def generate_weekly_plan(profile_id, week_start):
     """Build seven days from profile meals; return an explanation when slots lack data."""
+    has_saved_meals = Meal.objects.filter(profile_id=profile_id).exists()
     preferences = list(
         FoodPreference.objects.filter(
             profile_id=profile_id,
@@ -140,6 +141,7 @@ def generate_weekly_plan(profile_id, week_start):
     if missing_slots:
         return {
             "plan_available": False,
+            "meals_empty": not has_saved_meals,
             "week_start": week_start.isoformat(),
             "week_end": (week_start + timedelta(days=6)).isoformat(),
             "missing_meal_types": missing_slots,
@@ -181,6 +183,7 @@ def generate_weekly_plan(profile_id, week_start):
 
     return {
         "plan_available": True,
+        "meals_empty": False,
         "week_start": week_start.isoformat(),
         "week_end": (week_start + timedelta(days=6)).isoformat(),
         "missing_meal_types": [],

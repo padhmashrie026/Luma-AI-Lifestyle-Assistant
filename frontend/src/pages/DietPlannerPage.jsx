@@ -32,7 +32,6 @@ function MealCard({ title, meal }) {
 }
 
 function DietPlannerPage() {
-  const [profileId, setProfileId] = useState('')
   const [weekStart, setWeekStart] = useState('')
   const [errors, setErrors] = useState({})
   const [plan, setPlan] = useState(null)
@@ -44,10 +43,6 @@ function DietPlannerPage() {
     setPlan(null)
     setRequestError('')
     const nextErrors = {}
-    if (!profileId.trim()) nextErrors.profileId = 'Profile ID is required.'
-    else if (!/^\d+$/.test(profileId.trim()) || !Number.isSafeInteger(Number(profileId)) || Number(profileId) < 1) {
-      nextErrors.profileId = 'Enter a valid positive profile ID.'
-    }
     if (!weekStart) nextErrors.weekStart = 'Choose the first date of the week.'
     else if (!isValidISODate(weekStart)) {
       nextErrors.weekStart = 'Enter a valid date.'
@@ -57,7 +52,7 @@ function DietPlannerPage() {
 
     setIsLoading(true)
     try {
-      const response = await generateWeeklyMealPlan({ profile_id: Number(profileId), week_start: weekStart })
+      const response = await generateWeeklyMealPlan({ week_start: weekStart })
       if (!response || typeof response.plan_available !== 'boolean' || !Array.isArray(response.weekly_plan) || !Array.isArray(response.grocery_list)) {
         throw new Error('The server returned an unexpected meal plan. Please try again.')
       }
@@ -70,7 +65,6 @@ function DietPlannerPage() {
   }
 
   const reset = () => {
-    setProfileId('')
     setWeekStart('')
     setErrors({})
     setPlan(null)
@@ -87,13 +81,8 @@ function DietPlannerPage() {
     </section>
 
     <Card className="diet-request-card">
-      <SectionHeader title="Plan your week" description="Choose the profile and starting date for your seven-day preview." />
+      <SectionHeader title="Plan your week" description="Choose a starting date for your seven-day preview." />
       <form className="diet-request-form" onSubmit={submit} noValidate>
-        <div className="diet-field">
-          <label htmlFor="diet-profile-id">Profile ID <span>Required</span></label>
-          <input id="diet-profile-id" type="number" min="1" step="1" value={profileId} onChange={(event) => { setProfileId(event.target.value); setErrors((current) => ({ ...current, profileId: undefined })) }} aria-invalid={Boolean(errors.profileId)} aria-describedby={errors.profileId ? 'diet-profile-error' : 'diet-profile-help'} />
-          {errors.profileId ? <small className="diet-field-error" id="diet-profile-error" role="alert">{errors.profileId}</small> : <small className="diet-field-help" id="diet-profile-help">Used temporarily to find saved meals until sign-in is available.</small>}
-        </div>
         <div className="diet-field">
           <label htmlFor="diet-week-start">Week starting <span>Required</span></label>
           <input id="diet-week-start" type="date" value={weekStart} onChange={(event) => { setWeekStart(event.target.value); setErrors((current) => ({ ...current, weekStart: undefined })) }} aria-invalid={Boolean(errors.weekStart)} aria-describedby={errors.weekStart ? 'diet-date-error' : 'diet-date-help'} />
@@ -109,9 +98,9 @@ function DietPlannerPage() {
     </Card>
 
     <section className="diet-plan-section" aria-live="polite" aria-busy={isLoading}>
-      {!plan && !isLoading && !requestError && <Card className="diet-empty-state"><span className="diet-empty-mark" aria-hidden="true">▤</span><h3>Your weekly plan will appear here</h3><p>Submit the form to ask Django for a plan based on meals saved for the selected profile.</p></Card>}
+      {!plan && !isLoading && !requestError && <Card className="diet-empty-state"><span className="diet-empty-mark" aria-hidden="true">▤</span><h3>Your weekly plan will appear here</h3><p>Submit the form to build a plan from meals saved to your account.</p></Card>}
       {isLoading && <Card className="diet-empty-state"><p>Building your week from saved meals…</p></Card>}
-      {plan && !plan.plan_available && <><Card className="diet-unavailable-card" role="status"><span className="diet-result-kicker">Plan unavailable</span><h3>Some meal types are missing</h3><p>{plan.explanation}</p>{plan.missing_meal_types?.length > 0 && <div className="diet-missing-slots"><span>Needed meal types</span><ul>{plan.missing_meal_types.map((slot) => <li key={slot}>{slot}</li>)}</ul></div>}</Card>{plan.budget && <Card className="diet-budget-card diet-unavailable-budget"><SectionHeader title="Budget information" description="Budget estimates are not supported by stored meal data." /><p>{plan.budget.reason}</p></Card>}</>}
+      {plan && !plan.plan_available && <><Card className="diet-unavailable-card" role="status"><span className="diet-result-kicker">Plan unavailable</span><h3>{plan.meals_empty ? 'No meals saved yet' : 'Some meal types are missing'}</h3><p>{plan.meals_empty ? 'Your account has no saved meals to plan from yet. Add meals to your diet data and try again.' : plan.explanation}</p>{!plan.meals_empty && plan.missing_meal_types?.length > 0 && <div className="diet-missing-slots"><span>Needed meal types</span><ul>{plan.missing_meal_types.map((slot) => <li key={slot}>{slot}</li>)}</ul></div>}</Card>{plan.budget && <Card className="diet-budget-card diet-unavailable-budget"><SectionHeader title="Budget information" description="Budget estimates are not supported by stored meal data." /><p>{plan.budget.reason}</p></Card>}</>}
       {plan?.plan_available && <>
         <div className="diet-plan-heading"><div><p className="eyebrow">Weekly preview</p><h3>{formatDate(plan.week_start)} – {formatDate(plan.week_end)}</h3></div><span className="diet-preview-badge">{plan.saved ? 'Saved plan' : 'Preview · not saved'}</span></div>
 
