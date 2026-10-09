@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useAuth } from './auth/AuthContext.jsx'
 import AppLayout from './components/AppLayout.jsx'
 import Dashboard from './pages/Dashboard.jsx'
-import PlaceholderPage from './pages/PlaceholderPage.jsx'
 import BodyShapePage from './pages/BodyShapePage.jsx'
 import WardrobePage from './pages/WardrobePage.jsx'
 import OutfitRecommendationPage from './pages/OutfitRecommendationPage.jsx'
@@ -10,6 +9,7 @@ import DietPlannerPage from './pages/DietPlannerPage.jsx'
 import ExpensesPage from './pages/ExpensesPage.jsx'
 import DailyPlanPage from './pages/DailyPlanPage.jsx'
 import { ProfilePage, SettingsPage } from './pages/ProfileSettingsPage.jsx'
+import InsightsPage from './pages/InsightsPage.jsx'
 import { LoginPage, RegisterPage } from './pages/AuthPages.jsx'
 import Button from './components/Button.jsx'
 import './App.css'
@@ -22,7 +22,7 @@ const pages = {
   '/diet': { title: 'Diet Planner', component: <DietPlannerPage /> },
   '/expenses': { title: 'Expenses', component: <ExpensesPage /> },
   '/daily-plan': { title: 'Daily Plan', component: <DailyPlanPage /> },
-  '/insights': { title: 'Insights', component: <PlaceholderPage title="Insights" /> },
+  '/insights': { title: 'Insights', component: <InsightsPage /> },
   '/profile': { title: 'Profile', component: <ProfilePage /> },
   '/settings': { title: 'Settings', component: <SettingsPage /> },
 }

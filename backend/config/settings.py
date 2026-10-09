@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "apps.expenses.apps.ExpensesConfig",
     "apps.lifestyle.apps.LifestyleConfig",
     "apps.tracking.apps.TrackingConfig",
+    "apps.insights.apps.InsightsConfig",
 ]
 
 MIDDLEWARE = [
