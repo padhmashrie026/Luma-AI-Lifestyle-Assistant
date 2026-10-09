@@ -1,68 +1,108 @@
-﻿# AI Lifestyle Assistant
+﻿# Luma — AI Lifestyle Assistant
 
-An MCA mini project for organizing everyday clothing, meal planning, expenses, and routine progress in one place. It provides a React dashboard backed by a Django REST API, with a shared profile record connecting profile-scoped data.
+Luma is an MCA mini project that brings everyday lifestyle organization into one web application. Users can manage a personal profile, organize wardrobe and meal information, plan daily routines, track check-ins, and review expense and activity summaries.
 
-The application is intended as a practical personal organization tool. Its body-shape output is approximate styling guidance, outfit suggestions use transparent rules over saved wardrobe items, and meal planning is a general planning aid rather than medical or nutrition advice.
+The project uses a separate React frontend and Django REST Framework backend. The name describes the project concept; current recommendations and calculations are transparent rule-based features, with no external AI service integration.
+
+## Project objectives
+
+- Build a beginner-friendly full-stack application with a responsive interface and a REST API.
+- Keep personal records associated with the signed-in account.
+- Bring clothing organization, meal planning, expense tracking, and daily planning into one place.
+- Use simple, explainable calculations and present their limits clearly.
+- Demonstrate modular frontend and backend organization suitable for an MCA mini project.
+
+## Features
+
+- **Authentication:** registration, login, logout, and current-account details using Django sessions.
+- **Profile and settings:** update profile details and a preferred currency for the signed-in account.
+- **Body Shape guidance:** enter measurements for approximate, rule-based styling guidance; saved measurements are managed separately. Results are not medical or definitive assessments.
+- **Smart Wardrobe:** add, view, filter, edit, and remove personal wardrobe items.
+- **Outfit recommendations:** receive an occasion-based suggestion from available wardrobe items, using transparent rules. Generated recommendations are not saved as outfits.
+- **Diet Planner:** preview a seven-day plan from saved meals and food preferences. The preview is not persisted.
+- **Expenses:** manage expenses and budget categories, filter records, and review spending summaries.
+- **Daily planning:** create and manage daily plans with optional links to saved outfits and meal plans.
+- **Tracking:** save daily check-ins for outfit, meals, expense review, and plan completion; review progress over a date range.
+- **Insights:** review personal record counts, date-filtered spending by category, and tracking progress. New accounts receive an empty state.
 
 ## Technology stack
 
-- **Frontend:** React 19, Vite 8, JavaScript, and CSS.
-- **Backend:** Python, Django 5.2, Django REST Framework, and `django-cors-headers`.
-- **Database:** SQLite for local development.
-- **Tests:** Django's test framework and the production Vite build.
+Versions below are taken from the project manifests. Version ranges indicate supported dependencies; npm resolves specific package versions in `frontend/package-lock.json`.
 
-## Main modules
+| Area | Technology |
+| --- | --- |
+| Frontend | React and React DOM `^19.2.8`, JavaScript (ES modules), CSS |
+| Frontend tooling | Vite `^8.3.0`, `@vitejs/plugin-react` `^6.1.1` |
+| Backend language | Python 3.10 or later (Django 5.2 minimum) |
+| Backend framework | Django `>=5.2,<6.0`, Django REST Framework `>=3.16,<4.0` |
+| Cross-origin support | `django-cors-headers >=4.7,<5.0` |
+| Development database | SQLite |
 
-- **Body Shape:** submits four measurements to a rule-based calculator and displays approximate styling guidance. The calculator request does not save measurements.
-- **Smart Wardrobe:** creates, lists, filters, edits, and deletes saved wardrobe items.
-- **Outfit Recommendation:** recommends a combination from available wardrobe items for an occasion. It may use a supplied body-shape label or an existing saved measurement. It does not save the generated recommendation.
-- **Diet Planner:** builds a seven-day preview using meals and food preferences already saved for a profile. The API reports the generated plan as unsaved; the current frontend does not persist it. No food prices are stored, so the API does not estimate a budget.
-- **Expense Manager:** records and filters expenses and displays totals, category spending, and budget status from the API.
-- **Daily Plan & Tracking:** saves daily plans with optional existing outfit/meal-plan references and notes. Tracking records four check-ins and the API returns progress summaries.
-- **Profile & Settings:** reads and updates fields on an existing Django user/profile and its currency preference.
-- **Insights:** the route is a placeholder and has no API.
-
-## Architecture
-
-The React application is in `frontend/`. `src/App.jsx` maps browser paths to pages, reusable layout/components live in `src/components/`, pages live in `src/pages/`, and endpoint-specific functions live in `src/services/`. `apiClient.js` is the shared HTTP client. Vite proxies `/api` to Django while developing.
-
-The Django project is in `backend/`. `config/` holds project settings and root URL registration; feature apps in `apps/` hold their models, serializers, views, URLs, and tests. Some calculations are kept in service modules such as `outfits/recommendations.py`, `diet/planning.py`, `expenses/summaries.py`, and `tracking/summaries.py`. The local database is `backend/db.sqlite3`.
-
-See [architecture](docs/architecture.md), [setup](docs/setup.md), and [API reference](docs/api.md) for detail.
+The frontend toolchain requires Node.js `^20.19.0` or `>=22.12.0` and npm, according to the package engine requirements.
 
 ## Project structure
 
 ```text
-backend/
-  config/                 Django settings and root URLs
-  apps/                   Feature models, serializers, views, URLs, services, and tests
-  manage.py
-frontend/
-  src/components/         Shared dashboard and form components
-  src/pages/              Dashboard and feature pages
-  src/services/           Shared API client and feature request functions
-  vite.config.js
-docs/                     Setup, architecture, API, and testing references
+.
+├── backend/
+│   ├── config/                  # Django settings and root URL configuration
+│   ├── apps/
+│   │   ├── body_shape/          # Profile, authentication, and body-shape guidance
+│   │   ├── wardrobe/            # Wardrobe records and API
+│   │   ├── outfits/             # Outfit records and recommendations
+│   │   ├── diet/                # Meals, preferences, and weekly plan preview
+│   │   ├── expenses/            # Expenses, budget categories, and summaries
+│   │   ├── lifestyle/           # Daily plans
+│   │   ├── tracking/            # Daily check-ins and progress summaries
+│   │   └── insights/            # Personal overview API
+│   ├── manage.py
+│   └── requirements.txt
+├── frontend/
+│   ├── public/                  # Static public assets
+│   ├── src/
+│   │   ├── auth/                # Frontend account state
+│   │   ├── components/          # Shared interface components
+│   │   ├── pages/               # Dashboard and feature pages
+│   │   ├── services/            # API client and feature request functions
+│   │   ├── App.jsx              # Route-to-page mapping
+│   │   └── App.css              # Application styles
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js           # Development API proxy
+├── docs/                        # Setup, architecture, API, and testing notes
+└── README.md
 ```
 
-## Windows development setup
+## Prerequisites
 
-Use separate PowerShell terminals for the backend and frontend. The commands below are run from the repository root.
+- Windows 10 or later with PowerShell.
+- Python 3.10 or later and the Python launcher (`py`).
+- Node.js `^20.19.0` or `>=22.12.0`, which includes npm.
+- Git, if cloning the repository.
 
-### Backend
+## Install and run on Windows
+
+Open **two PowerShell terminals** in the project folder. Run the backend and frontend in separate terminals and leave both running while using the application.
+
+### Terminal 1: Django backend
+
+From the project root:
 
 ```powershell
 cd backend
 py -m venv .venv
 .venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
 
-The API is served at `http://127.0.0.1:8000/`. To use profile-based modules, create a Django user and an associated Profile record. A superuser can be created with `python manage.py createsuperuser` and records can be managed at `/admin/`.
+The backend runs at `http://127.0.0.1:8000/`. Django creates or updates the local SQLite database at `backend/db.sqlite3` when migrations run.
 
-### Frontend
+### Terminal 2: React frontend
+
+From the project root in the second terminal:
 
 ```powershell
 cd frontend
@@ -70,27 +110,40 @@ npm.cmd install
 npm.cmd run dev
 ```
 
-Open the local URL Vite prints (normally `http://localhost:5173`). Vite proxies `/api` to `http://127.0.0.1:8000`. `VITE_API_BASE_URL` changes the API base URL; `VITE_API_PROXY_TARGET` changes the development proxy target. The installed Vite and React plugin packages require Node.js `^20.19.0` or `>=22.12.0`.
+Open the local address printed by Vite, normally `http://localhost:5173`. During development, Vite forwards `/api` requests to Django at `http://127.0.0.1:8000`. Change the proxy target with `VITE_API_PROXY_TARGET` or the browser API base with `VITE_API_BASE_URL`. Put optional values in a local `frontend/.env.local` file. Do not put secrets in `VITE_*` variables because frontend values are exposed to the browser.
 
-The complete Windows commands and troubleshooting notes are in [docs/setup.md](docs/setup.md).
+New users can register in the application. The backend creates a Profile for each registered account. Existing Django accounts get a Profile when account details are first accessed if one does not already exist.
 
-## Routes
+## Tests and production build
 
-- `/dashboard`
-- `/body-shape`
-- `/wardrobe`
-- `/outfits`
-- `/diet`
-- `/expenses`
-- `/daily-plan`
-- `/profile`
-- `/settings`
-- `/insights` (placeholder)
+Run backend checks and tests from the `backend` directory after activating the virtual environment:
 
-## Verification
+```powershell
+python manage.py check
+python manage.py test
+```
 
-At the most recent integration verification, `python manage.py check` passed, the full Django suite passed **62 tests**, the Vite production build passed, all listed frontend routes returned HTTP 200 from the development server, and all documented API paths resolved in Django. See [docs/testing.md](docs/testing.md) for commands and the final checklist.
+Build the frontend from the project root:
 
-## Development and deployment limitations
+```powershell
+npm.cmd --prefix frontend run build
+```
 
-Application authentication is not implemented. Profile-based APIs accept an explicit `profile_id` and are open in the development configuration; this is not secure multi-user access control. The Profile and Settings pages require an existing profile ID. The project settings use `DEBUG = True`, a development-only Django secret key, SQLite, and local CORS origins. These settings are for local work and must be replaced or secured before deployment. No production deployment is configured; see [docs/setup.md](docs/setup.md#production-preparation).
+The production build is written to `frontend/dist/`. The repository does not configure production hosting or deployment.
+
+## Authentication and personal-data ownership
+
+The API uses Django session authentication and CSRF protection for browser requests. Registration, login, and the CSRF-token endpoint are available without an existing session. Personal profile, wardrobe, outfit, diet, expense, daily-plan, tracking, and Insights APIs require authentication and resolve ownership from the signed-in Django user. Client-supplied profile IDs do not grant access to another user's records.
+
+The body-shape calculation endpoint accepts measurement values without requiring a session and returns an unsaved styling estimate. Saved measurement records belong to the signed-in user's Profile. Local development settings are intended for learning and local use; do not expose them to real users or sensitive data as-is.
+
+## Known limitations
+
+- There is no external AI integration. Outfit suggestions, body-shape guidance, diet-plan previews, and Insights use application rules and stored data.
+- Body-shape output is approximate styling guidance, not a scientific or medical diagnosis. Clothing sizes vary by brand.
+- Weekly meal plans are previews and are not saved. The project does not store meal or ingredient prices, so it cannot estimate a diet budget. Ingredient-name matches are planning hints, not nutrition analysis.
+- Expense tools organize records and budget categories; they do not provide professional financial advice.
+- Outfit recommendations are returned as suggestions and are not saved automatically.
+- Insights summarizes implemented record counts, expenses, and tracking; it is not a predictive analytics system.
+- SQLite, `DEBUG = True`, local CORS/CSRF origins, and the development secret-key setting are for local development. No production deployment configuration is included.
+- The frontend package defines a production build script but no automated frontend test script. Backend tests use Django's test runner.
