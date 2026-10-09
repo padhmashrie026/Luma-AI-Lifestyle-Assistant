@@ -187,6 +187,40 @@ class BodyMeasurementOwnershipTests(TestCase):
         self.assertEqual(updated.data["styling_shape"], "pear")
         self.assertEqual(BodyMeasurement.objects.count(), 1)
 
+    def test_multiple_measurements_return_and_update_the_latest_record(self):
+        older = BodyMeasurement.objects.create(
+            profile=self.profile_a,
+            measured_on="2026-10-03",
+            shoulder_cm=80,
+            bust_cm=82,
+            waist_cm=70,
+            hip_cm=90,
+            styling_shape="pear",
+        )
+        latest = BodyMeasurement.objects.create(
+            profile=self.profile_a,
+            measured_on="2026-10-04",
+            shoulder_cm=90,
+            bust_cm=90,
+            waist_cm=65,
+            hip_cm=92,
+            styling_shape="hourglass",
+        )
+        self.client.force_authenticate(self.user_a)
+
+        retrieved = self.client.get(self.url)
+        self.assertEqual(retrieved.status_code, 200)
+        self.assertEqual(retrieved.data["id"], latest.id)
+        self.assertEqual(retrieved.data["measured_on"], "2026-10-04")
+
+        updated = self.client.patch(self.url, {"styling_shape": "rectangle"}, format="json")
+        self.assertEqual(updated.status_code, 200)
+        self.assertEqual(updated.data["id"], latest.id)
+        older.refresh_from_db()
+        latest.refresh_from_db()
+        self.assertEqual(older.styling_shape, "pear")
+        self.assertEqual(latest.styling_shape, "rectangle")
+
     def test_measurements_require_authentication(self):
         for response in (
             self.client.get(self.url),
@@ -195,14 +229,26 @@ class BodyMeasurementOwnershipTests(TestCase):
             self.assertIn(response.status_code, (401, 403))
 
     def test_user_cannot_read_or_update_another_users_measurements(self):
-        BodyMeasurement.objects.create(profile=self.profile_b, **self.payload)
+        other_payload = {**self.payload, "measured_on": "2026-10-05"}
+        other_measurement = BodyMeasurement.objects.create(profile=self.profile_b, **other_payload)
         self.client.force_authenticate(self.user_a)
         self.assertEqual(self.client.get(self.url).status_code, 404)
         self.assertEqual(
             self.client.patch(self.url, {"styling_shape": "pear"}, format="json").status_code,
             404,
         )
-        self.assertEqual(BodyMeasurement.objects.get().styling_shape, "hourglass")
+        self.assertEqual(BodyMeasurement.objects.get(pk=other_measurement.pk).styling_shape, "hourglass")
+
+        own_measurement = BodyMeasurement.objects.create(profile=self.profile_a, **self.payload)
+        retrieved = self.client.get(self.url)
+        self.assertEqual(retrieved.status_code, 200)
+        self.assertEqual(retrieved.data["id"], own_measurement.id)
+        updated = self.client.patch(self.url, {"styling_shape": "rectangle"}, format="json")
+        self.assertEqual(updated.status_code, 200)
+        own_measurement.refresh_from_db()
+        other_measurement.refresh_from_db()
+        self.assertEqual(own_measurement.styling_shape, "rectangle")
+        self.assertEqual(other_measurement.styling_shape, "hourglass")
 
     def test_new_registration_has_no_demo_measurements(self):
         response = self.client.post(

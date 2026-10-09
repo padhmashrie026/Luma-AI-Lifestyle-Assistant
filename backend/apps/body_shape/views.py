@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -26,10 +27,18 @@ class BodyMeasurementView(APIView):
     def get_profile(self, request):
         return get_object_or_404(Profile, user=request.user)
 
-    def get(self, request):
-        measurement = get_object_or_404(
-            BodyMeasurement, profile=self.get_profile(request)
+    def get_latest_measurement(self, request):
+        measurement = (
+            BodyMeasurement.objects.filter(profile=self.get_profile(request))
+            .order_by("-measured_on", "-id")
+            .first()
         )
+        if measurement is None:
+            raise Http404
+        return measurement
+
+    def get(self, request):
+        measurement = self.get_latest_measurement(request)
         return Response(BodyMeasurementSerializer(measurement).data)
 
     def post(self, request):
@@ -48,9 +57,7 @@ class BodyMeasurementView(APIView):
         )
 
     def patch(self, request):
-        measurement = get_object_or_404(
-            BodyMeasurement, profile=self.get_profile(request)
-        )
+        measurement = self.get_latest_measurement(request)
         serializer = BodyMeasurementSerializer(
             measurement, data=request.data, partial=True
         )
