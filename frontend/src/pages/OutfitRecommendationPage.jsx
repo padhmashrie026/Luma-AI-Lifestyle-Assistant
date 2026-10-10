@@ -71,10 +71,9 @@ function OutfitRecommendationPage() {
     setRequestError('')
   }
 
-  const recommendation = result?.recommendation
-  const selectedPieces = recommendation
-    ? recommendationSlots.filter(([key]) => recommendation[key])
-    : []
+  const suggestions = result?.recommendations?.length
+    ? result.recommendations
+    : result?.recommendation ? [result.recommendation] : []
   const insufficientTitle = result?.wardrobe_empty
     ? 'Your wardrobe is empty'
     : 'There aren’t enough available pieces yet'
@@ -121,10 +120,13 @@ function OutfitRecommendationPage() {
           : !result ? <Card className="outfit-result-empty"><span className="outfit-empty-mark" aria-hidden="true">✦</span><h3>Your outfit will appear here</h3><p>Choose an occasion to ask Django for a recommendation from your saved wardrobe.</p></Card>
           : !result.recommendation_available ? <Card className="outfit-insufficient-card"><span className="outfit-result-kicker">Wardrobe check</span><h3>{insufficientTitle}</h3><p>{insufficientMessage}</p>{!result.wardrobe_empty && result.missing_items?.length > 0 && <div className="missing-items"><span>Needed to complete a look</span><ul>{result.missing_items.map((item) => <li key={item}>{item}</li>)}</ul></div>}<p className="outfit-explanation">{result.explanation}</p></Card>
           : <Card className="outfit-result-card">
-            <span className="outfit-result-kicker">Your suggestion</span>
-            <h3>Ready for {occasions.find(([value]) => value === result.occasion)?.[1]?.toLowerCase() || result.occasion}</h3>
+            <span className="outfit-result-kicker">Your suggestions</span>
+            <h3>Looks for {occasions.find(([value]) => value === result.occasion)?.[1]?.toLowerCase() || result.occasion}</h3>
             <p className="outfit-result-message">{result.message}</p>
-            <div className="outfit-pieces-grid">{selectedPieces.map(([key, title]) => <OutfitItem key={key} title={title} item={recommendation[key]} />)}</div>
+            <div className="outfit-recommendations-list">{suggestions.map((recommendation, index) => <article className="outfit-suggestion" key={`${recommendation.selected_one_piece?.id || ''}-${recommendation.selected_top?.id || ''}-${recommendation.selected_bottom?.id || ''}-${recommendation.selected_outerwear?.id || ''}-${recommendation.selected_accessory?.id || ''}`}>
+              <h4>Option {index + 1}</h4>
+              <div className="outfit-pieces-grid">{recommendationSlots.filter(([key]) => recommendation[key]).map(([key, title]) => <OutfitItem key={key} title={title} item={recommendation[key]} />)}</div>
+            </article>)}</div>
             <div className="outfit-reasoning"><h4>Why this was suggested</h4><p>{result.explanation}</p></div>
             {result.body_shape && <p className="outfit-shape-note">Styling shape used: <strong>{bodyShapes.find(([value]) => value === result.body_shape)?.[1] || result.body_shape}</strong> · approximate styling guidance</p>}
             {!result.season_applied && <p className="outfit-season-note result-season-note">Season was not applied because the current wardrobe data does not include season.</p>}

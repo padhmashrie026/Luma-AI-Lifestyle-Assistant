@@ -5,13 +5,17 @@ import SectionHeader from '../components/SectionHeader.jsx'
 import { isValidISODate, localDateString } from '../utils/date.js'
 import {
   createDailyPlan,
+  createDailyTask,
+  deleteDailyTask,
   createTrackingRecord,
   deleteDailyPlan,
   getDailyPlan,
   getDailyPlans,
+  getDailyTasks,
   getTrackingRecords,
   getTrackingSummary,
   updateDailyPlan,
+  updateDailyTask,
   updateTrackingRecord,
 } from '../services/dailyPlanService.js'
 
@@ -22,6 +26,7 @@ const completionFields = [
   ['daily_plan_completed', 'Daily plan'],
 ]
 const emptyPlan = { plan_date: '', outfit: '', meal_plan: '', notes: '' }
+const emptyTask = { title: '', description: '', task_date: '', duration_minutes: '' }
 
 function DailyPlanPage() {
   const [selectedDate, setSelectedDate] = useState(localDateString)
@@ -37,14 +42,20 @@ function DailyPlanPage() {
   const [form, setForm] = useState(emptyPlan)
   const [saving, setSaving] = useState(false)
   const [updatingField, setUpdatingField] = useState('')
+  const [tasks, setTasks] = useState([])
+  const [taskFormOpen, setTaskFormOpen] = useState(false)
+  const [editingTaskId, setEditingTaskId] = useState(null)
+  const [taskForm, setTaskForm] = useState(emptyTask)
+  const [taskError, setTaskError] = useState('')
+  const [taskSaving, setTaskSaving] = useState(false)
 
-  const loadDay = useCallback(async () => {
+  const loadDay = useCallback(async (dateToLoad = selectedDate) => {
     setLoading(true); setError('')
     try {
       const [planResponse, trackingResponse, summaryResponse] = await Promise.all([
-        getDailyPlans(selectedDate),
-        getTrackingRecords(selectedDate),
-        getTrackingSummary(selectedDate),
+        getDailyPlans(dateToLoad),
+        getTrackingRecords(dateToLoad),
+        getTrackingSummary(dateToLoad),
       ])
       if (!Array.isArray(planResponse) || !Array.isArray(trackingResponse)
         || !summaryResponse || typeof summaryResponse.completion_percentage !== 'number'
@@ -53,9 +64,20 @@ function DailyPlanPage() {
       }
       const plans = planResponse
       const records = trackingResponse
-      setPlan(plans.find((item) => item.plan_date === selectedDate) || null)
-      setTracking(records.find((item) => item.track_date === selectedDate) || null)
+      const selectedPlan = plans.find((item) => item.plan_date === dateToLoad) || null
+      setPlan(selectedPlan)
+      setTracking(records.find((item) => item.track_date === dateToLoad) || null)
       setSummary(summaryResponse)
+      if (selectedPlan) {
+        setTaskError('')
+        try {
+          const taskResponse = await getDailyTasks(selectedPlan.id)
+          if (!Array.isArray(taskResponse)) throw new Error('The server returned unexpected task data. Please try again.')
+          setTasks(taskResponse)
+        } catch (taskRequestError) {
+          setTaskError(taskRequestError.message)
+        }
+      } else { setTasks([]); setTaskError('') }
     } catch (requestError) {
       setError(requestError.message)
     } finally { setLoading(false) }
@@ -105,8 +127,10 @@ function DailyPlanPage() {
     try {
       if (editingId) { await updateDailyPlan(editingId, payload); setNotice('Daily plan updated.') }
       else { await createDailyPlan(payload); setNotice('Daily plan created.') }
+      const savedPlanDate = form.plan_date
       setSelectedDate(form.plan_date)
       closeForm()
+      await loadDay(savedPlanDate)
     } catch (requestError) { setFormError(requestError.message) }
     finally { setSaving(false) }
   }
@@ -143,6 +167,51 @@ function DailyPlanPage() {
   }
 
   const changeForm = (event) => setForm((current) => ({ ...current, [event.target.name]: event.target.value }))
+
+  const openTaskForm = (task = null) => {
+    setTaskError('')
+    setEditingTaskId(task?.id || null)
+    setTaskForm(task ? {
+      title: task.title, description: task.description || '', task_date: task.task_date,
+      duration_minutes: String(task.duration_minutes),
+    } : { ...emptyTask, task_date: selectedDate })
+    setTaskFormOpen(true)
+  }
+
+  const closeTaskForm = () => {
+    setTaskFormOpen(false); setEditingTaskId(null); setTaskForm(emptyTask); setTaskError('')
+  }
+
+  const saveTask = async (event) => {
+    event.preventDefault(); setTaskError('')
+    if (!taskForm.title.trim()) return setTaskError('Task title is required.')
+    if (!isValidISODate(taskForm.task_date)) return setTaskError('Choose a valid task date.')
+    if (!/^\d+$/.test(String(taskForm.duration_minutes)) || Number(taskForm.duration_minutes) <= 0) return setTaskError('Duration must be a positive number of minutes.')
+    setTaskSaving(true)
+    const payload = { ...taskForm, title: taskForm.title.trim(), description: taskForm.description.trim(), duration_minutes: Number(taskForm.duration_minutes) }
+    try {
+      if (editingTaskId) { await updateDailyTask(editingTaskId, payload); setNotice('Task updated.') }
+      else { await createDailyTask(plan.id, payload); setNotice('Task added.') }
+      closeTaskForm()
+      await loadDay()
+    } catch (requestError) { setTaskError(requestError.message) }
+    finally { setTaskSaving(false) }
+  }
+
+  const toggleTask = async (task) => {
+    setTaskSaving(true); setTaskError('')
+    try { await updateDailyTask(task.id, { is_completed: !task.is_completed }); await loadDay() }
+    catch (requestError) { setTaskError(requestError.message) }
+    finally { setTaskSaving(false) }
+  }
+
+  const removeTask = async (task) => {
+    if (!window.confirm(`Delete “${task.title}”? This cannot be undone.`)) return
+    setTaskSaving(true); setTaskError('')
+    try { await deleteDailyTask(task.id); setNotice('Task deleted.'); await loadDay() }
+    catch (requestError) { setTaskError(requestError.message) }
+    finally { setTaskSaving(false) }
+  }
   const progress = summary?.completion_percentage ?? 0
 
   return <div className="daily-plan-page">
@@ -163,6 +232,27 @@ function DailyPlanPage() {
         <div className="daily-notes-field"><label htmlFor="daily-form-notes">Notes</label><textarea id="daily-form-notes" name="notes" maxLength="400" rows="3" value={form.notes} onChange={changeForm} /></div>
       </div>{formError && <p className="daily-error" role="alert">{formError}</p>}<div className="form-actions"><Button type="submit" className="primary-button" disabled={saving}>{saving ? 'Saving…' : editingId ? 'Save changes' : 'Create plan'}</Button><Button type="button" className="secondary-button" onClick={() => { setForm({ ...emptyPlan, plan_date: selectedDate }); setFormError('') }} disabled={saving}>Reset</Button><Button type="button" className="secondary-button" onClick={closeForm} disabled={saving}>Cancel</Button></div></form>
     </Card>}
+
+    <Card className="daily-tasks-card"><SectionHeader title="Tasks" description={plan ? `${tasks.length} saved ${tasks.length === 1 ? 'task' : 'tasks'} under this daily plan` : 'Create a daily plan before adding tasks.'} action={<Button className="primary-button" onClick={() => openTaskForm()} disabled={!plan || loading || taskSaving}>Add Task</Button>} />
+      {taskFormOpen && <form className="daily-task-form" onSubmit={saveTask} noValidate>
+        <div className="daily-task-fields">
+          <label htmlFor="task-title">Task title <span>Required</span><input id="task-title" maxLength="120" required value={taskForm.title} onChange={(event) => setTaskForm({ ...taskForm, title: event.target.value })} /></label>
+          <label htmlFor="task-duration">Duration in minutes <span>Required</span><input id="task-duration" type="number" min="1" step="1" required value={taskForm.duration_minutes} onChange={(event) => setTaskForm({ ...taskForm, duration_minutes: event.target.value })} /></label>
+          <label htmlFor="task-date">Task date <span>Required</span><input id="task-date" type="date" required value={taskForm.task_date} onChange={(event) => setTaskForm({ ...taskForm, task_date: event.target.value })} /></label>
+          <label htmlFor="task-description">Description <span>Optional</span><textarea id="task-description" maxLength="400" rows="2" value={taskForm.description} onChange={(event) => setTaskForm({ ...taskForm, description: event.target.value })} /></label>
+        </div>
+        {taskError && <p className="daily-error" role="alert">{taskError}</p>}
+        <div className="form-actions"><Button type="submit" className="primary-button" disabled={taskSaving || !plan}>{taskSaving ? 'Saving…' : editingTaskId ? 'Save task' : 'Add task'}</Button><Button type="button" className="secondary-button" onClick={closeTaskForm} disabled={taskSaving}>Cancel</Button></div>
+      </form>}
+      {!taskFormOpen && taskError && <div className="daily-error-box" role="alert"><span>{taskError}</span><Button className="secondary-button" onClick={() => loadDay()}>Reload tasks</Button></div>}
+      {!taskFormOpen && (loading ? <p className="daily-task-empty">Loading tasks for the selected day…</p>
+        : !plan ? <p className="daily-task-empty">Create a daily plan first, then use Add Task to attach tasks to it.</p>
+          : tasks.length === 0 ? <p className="daily-task-empty">No tasks yet. Add a task to track its duration and completion.</p>
+            : <ul className="daily-task-list">{tasks.map((task) => <li className={`daily-task-row ${task.is_completed ? 'is-complete' : ''}`} key={task.id}>
+              <div className="daily-task-copy"><strong>{task.title}</strong><small>{task.task_date} · {task.duration_minutes} minutes{task.description ? ` · ${task.description}` : ''}</small><span>{task.is_completed ? 'Completed' : 'Pending'}</span></div>
+              <div className="daily-plan-actions"><Button className="secondary-button" onClick={() => toggleTask(task)} disabled={taskSaving}>{task.is_completed ? 'Mark Pending' : 'Mark Complete'}</Button><Button className="secondary-button" onClick={() => openTaskForm(task)} disabled={taskSaving}>Edit</Button><Button className="item-delete-button" onClick={() => removeTask(task)} disabled={taskSaving}>Delete</Button></div>
+            </li>)}</ul>)}
+    </Card>
 
     {error && <div className="daily-error-box" role="alert"><span>{error}</span><Button className="secondary-button" onClick={loadDay}>Try again</Button></div>}
     {loading ? <Card className="daily-loading" aria-live="polite">Loading the selected day…</Card> : !error && <div className="daily-content-grid">

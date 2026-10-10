@@ -6,8 +6,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from apps.body_shape.models import Profile
-from .models import DailyPlan
-from .serializers import DailyPlanSerializer
+from .models import DailyPlan, DailyTask
+from .serializers import DailyPlanSerializer, DailyTaskSerializer
 
 
 def _query_date(params, key):
@@ -54,3 +54,34 @@ class DailyPlanDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         profile = get_object_or_404(Profile, user=self.request.user)
         return DailyPlan.objects.select_related("profile", "outfit", "meal_plan").filter(profile=profile)
+
+
+class DailyTaskListCreateView(generics.ListCreateAPIView):
+    serializer_class = DailyTaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_profile(self):
+        return get_object_or_404(Profile, user=self.request.user)
+
+    def get_plan(self):
+        return get_object_or_404(DailyPlan, pk=self.kwargs["plan_id"], profile=self.get_profile())
+
+    def get_queryset(self):
+        return DailyTask.objects.filter(profile=self.get_profile(), daily_plan=self.get_plan())
+
+    def perform_create(self, serializer):
+        plan = self.get_plan()
+        serializer.save(
+            profile=self.get_profile(),
+            daily_plan=plan,
+            task_date=serializer.validated_data.get("task_date", plan.plan_date),
+        )
+
+
+class DailyTaskDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = DailyTaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        return DailyTask.objects.filter(profile=profile)

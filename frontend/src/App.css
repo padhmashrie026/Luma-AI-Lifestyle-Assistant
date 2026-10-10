@@ -202,6 +202,10 @@
 .outfit-result-card h3 { margin: 0; color: #2c4232; font-size: 21px; letter-spacing: -.5px; }
 .outfit-result-message { margin: 6px 0 0; color: #758078; font-size: 11px; }
 .outfit-pieces-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+.outfit-recommendations-list { display: grid; gap: 12px; margin-top: 16px; }
+.outfit-suggestion { border-top: 1px solid #edf0ed; padding-top: 12px; }
+.outfit-suggestion > h4 { margin: 0; color: #4a584e; font-size: 11px; }
+.outfit-suggestion .outfit-pieces-grid { margin-top: 9px; }
 .outfit-piece { min-width: 0; border: 1px solid #e8ede8; border-radius: 10px; background: #fbfcfb; padding: 13px; }
 .outfit-piece-label { color: #708077; font-size: 9px; font-weight: 700; letter-spacing: .55px; text-transform: uppercase; }
 .outfit-piece h4 { overflow-wrap: anywhere; margin: 7px 0 4px; color: #34443a; font-size: 13px; }
@@ -222,6 +226,19 @@
 .outfit-explanation { margin-top: 14px !important; }
 
 .diet-welcome { margin-bottom: 22px; }
+.diet-meals-card { margin-bottom: 24px; padding: 21px; }
+.diet-meal-form { margin: 16px 0; border: 1px solid #edf0ed; border-radius: 10px; padding: 15px; }
+.diet-meal-form h3 { margin: 0 0 12px; color: #38513f; font-size: 13px; }
+.diet-meal-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+.diet-meal-form-grid label { display: grid; gap: 5px; color: #59685e; font-size: 10px; font-weight: 700; }
+.diet-meal-form-grid input, .diet-meal-form-grid select, .diet-ingredient-row input { width: 100%; min-height: 36px; border: 1px solid #e3e9e4; border-radius: 8px; background: #fff; padding: 7px 9px; color: var(--ink); font: inherit; font-size: 11px; }
+.diet-meal-form-grid label span { color: #89948d; font-size: 9px; font-weight: 400; }
+.diet-ingredient-editor, .diet-saved-meals { display: grid; gap: 8px; margin: 12px 0; }
+.diet-ingredient-row { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 7px; }
+.diet-saved-meal { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid #edf0ed; padding: 12px 0; }
+.diet-saved-meal h4 { margin: 4px 0; color: #34443a; font-size: 12px; }
+.diet-saved-meal p, .diet-saved-meal small { margin: 0; color: #78847b; font-size: 10px; }
+.diet-notice { color: #3e6749; font-size: 11px; }
 .diet-request-card { margin-bottom: 24px; padding: 21px; }
 .diet-request-card .section-header { margin-bottom: 18px; }
 .diet-request-form { display: grid; grid-template-columns: minmax(180px, .8fr) minmax(180px, .8fr) auto; align-items: end; gap: 14px; }
@@ -252,6 +269,7 @@
 .diet-missing-slots li { border-radius: 6px; background: #ececdf; padding: 5px 8px; color: #64654f; font-size: 10px; text-transform: capitalize; }
 .diet-unavailable-budget { padding: 18px 21px; }
 .diet-plan-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.diet-save-plan-actions { display: flex; justify-content: flex-end; }
 .diet-plan-heading .eyebrow { margin-bottom: 5px; }
 .diet-plan-heading h3 { margin: 0; color: #2e4034; font-size: 20px; letter-spacing: -.4px; }
 .diet-preview-badge { display: inline-flex; border: 1px solid #e9e6da; border-radius: 999px; background: #fbfaf5; padding: 6px 9px; color: #786b42; font-size: 9px; font-weight: 700; white-space: nowrap; }
@@ -345,7 +363,27 @@
 .daily-notes-field { grid-column: 1 / -1; }
 .daily-content-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .7fr); align-items: start; gap: 15px; }
 .daily-main-column, .daily-progress-column { display: grid; gap: 15px; min-width: 0; }
-.daily-plan-card, .daily-checkins-card, .daily-progress-card { padding: 19px; }
+.daily-plan-card, .daily-tasks-card, .daily-checkins-card, .daily-progress-card { padding: 19px; }
+.daily-task-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.daily-task-fields label { display: grid; gap: 5px; color: #59685e; font-size: 10px; font-weight: 700; }
+.daily-task-fields label span { color: #89948d; font-size: 9px; font-weight: 400; }
+.daily-task-fields input, .daily-task-fields textarea { width: 100%; min-height: 38px; border: 1px solid #e3e9e4; border-radius: 8px; background: #fff; padding: 8px 10px; color: var(--ink); font: inherit; font-size: 11px; }
+.daily-task-fields textarea { resize: vertical; }
+.daily-task-form { margin-bottom: 15px; border-bottom: 1px solid #edf0ed; padding-bottom: 14px; }
+.daily-task-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.daily-task-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #edf0ed; padding: 11px 0; }
+.daily-task-row:first-child { border-top: 0; }
+.daily-task-copy { display: grid; gap: 4px; min-width: 0; }
+.daily-task-copy strong { color: #425247; font-size: 11px; }
+.daily-task-copy small, .daily-task-copy span { color: #7d8981; font-size: 10px; line-height: 1.5; }
+.daily-task-row.is-complete .daily-task-copy strong { color: #869189; text-decoration: line-through; }
+.daily-task-check { display: flex; align-items: flex-start; gap: 10px; min-width: 0; cursor: pointer; }
+.daily-task-check input { margin-top: 2px; accent-color: #547b5d; }
+.daily-task-check span { display: grid; gap: 4px; }
+.daily-task-check strong { color: #425247; font-size: 11px; }
+.daily-task-check small, .daily-task-empty { color: #7d8981; font-size: 10px; line-height: 1.5; }
+.daily-task-row.is-complete .daily-task-check strong { color: #869189; text-decoration: line-through; }
+.daily-task-empty { margin: 0; }
 .daily-plan-actions { display: flex; gap: 7px; }
 .daily-plan-details { display: grid; gap: 15px; }
 .daily-linked-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -388,7 +426,7 @@
 @media (max-width: 760px) { .expense-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) { .daily-content-grid { grid-template-columns: 1fr; }.daily-progress-column { grid-row: 1; } }
 @media (max-width: 540px) { .expense-scope, .expense-form-grid, .expense-filters { grid-template-columns: 1fr; }.expense-notes-field { grid-column: auto; }.expense-category-row { grid-template-columns: 1fr auto; gap: 8px; }.expense-meter { grid-column: 1 / -1; }.expense-table-wrap { overflow: visible; border: 0; background: transparent; }.expense-table, .expense-table tbody, .expense-table tr, .expense-table td { display: block; width: 100%; }.expense-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }.expense-table tr { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 10px; background: white; padding: 6px 12px; }.expense-table td { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #edf0ed; padding: 9px 0; text-align: right; }.expense-table td::before { content: attr(data-label); color: #87928a; font-size: 9px; font-weight: 700; text-align: left; }.expense-table td:last-child { border-bottom: 0; }.expense-row-actions { justify-content: flex-end; } }
-@media (max-width: 540px) { .daily-scope-grid, .daily-form-grid, .daily-linked-items { grid-template-columns: 1fr; }.daily-notes-field { grid-column: auto; }.daily-plan-card, .daily-checkins-card, .daily-progress-card, .daily-form-card, .daily-scope-card { padding: 16px; }.daily-plan-actions { flex-wrap: wrap; } }
+@media (max-width: 540px) { .daily-scope-grid, .daily-form-grid, .daily-linked-items, .daily-task-fields { grid-template-columns: 1fr; }.daily-notes-field { grid-column: auto; }.daily-plan-card, .daily-tasks-card, .daily-checkins-card, .daily-progress-card, .daily-form-card, .daily-scope-card { padding: 16px; }.daily-plan-actions { flex-wrap: wrap; }.daily-task-row { align-items: flex-start; flex-direction: column; } }
 
 /* Profile and settings */
 .account-welcome { margin-bottom: 21px; }

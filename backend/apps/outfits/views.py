@@ -18,8 +18,9 @@ class OutfitRecommendationView(APIView):
         profile = get_object_or_404(Profile, user=request.user)
         result = recommend_outfit(profile_id=profile.id, **serializer.validated_data)
         if result["recommendation"]:
-            result["recommendation"] = {
-                key: WardrobeItemSerializer(value).data if value else None
-                for key, value in result["recommendation"].items()
-            }
+            result["recommendations"] = [
+                {key: WardrobeItemSerializer(value).data if value else None for key, value in combination.items()}
+                for combination in result["recommendations"]
+            ]
+            result["recommendation"] = result["recommendations"][0]
         return Response(result)

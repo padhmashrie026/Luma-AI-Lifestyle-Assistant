@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 
 from apps.body_shape.models import Profile
 from apps.lifestyle.models import DailyPlan
+from apps.lifestyle.models import DailyTask
 from apps.tracking.models import DailyTracking
 
 
@@ -99,6 +100,28 @@ class DailyTrackingApiTests(TestCase):
         self.assertEqual(response.data["completion_percentage"], 75.0)
         self.assertEqual(response.data["progress_by_field"]["meals_completed"]["completed_days"], 1)
         self.assertEqual(len(response.data["daily_progress"]), 2)
+
+    def test_summary_includes_saved_daily_tasks_and_updates_completion_percentage(self):
+        self.client.post(self.url, self.payload(), format="json")
+        DailyTask.objects.create(
+            profile=self.profile, daily_plan=self.plan, title="Completed task",
+            task_date=date(2026, 10, 3), duration_minutes=20, is_completed=True,
+        )
+        DailyTask.objects.create(
+            profile=self.profile, daily_plan=self.plan, title="Pending task",
+            task_date=date(2026, 10, 3), duration_minutes=15,
+        )
+        response = self.client.get(
+            f"{self.url}summary/",
+            {"start_date": "2026-10-03", "end_date": "2026-10-03"},
+        )
+        self.assertEqual(response.status_code, 200)
+        # Four tracking check-ins plus two saved tasks: two check-ins and one task are complete.
+        self.assertEqual(response.data["completed_tasks"], 3)
+        self.assertEqual(response.data["pending_tasks"], 3)
+        self.assertEqual(response.data["completion_percentage"], 50.0)
+        self.assertEqual(response.data["daily_progress"][0]["completed_tasks"], 3)
+        self.assertEqual(response.data["daily_progress"][0]["pending_tasks"], 3)
 
     def test_rejects_invalid_dates_duplicates_and_mismatched_plan(self):
         invalid = self.client.post(self.url, self.payload(track_date="2026-02-30"), format="json")

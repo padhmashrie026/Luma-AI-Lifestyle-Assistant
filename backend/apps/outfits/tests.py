@@ -39,6 +39,44 @@ class OutfitRecommendationTests(TestCase):
         self.assertEqual(recommendation["selected_top"]["id"], self.top.id)
         self.assertEqual(recommendation["selected_bottom"]["id"], self.bottom.id)
 
+    def test_returns_varied_combinations_without_duplicates(self):
+        second_top = WardrobeItem.objects.create(
+            profile=self.profile, name="Silk blouse", category=WardrobeItem.Category.TOP
+        )
+        second_bottom = WardrobeItem.objects.create(
+            profile=self.profile, name="Denim skirt", category=WardrobeItem.Category.BOTTOM
+        )
+        dress = WardrobeItem.objects.create(
+            profile=self.profile, name="Summer dress", category=WardrobeItem.Category.DRESS
+        )
+
+        response = self.client.post(self.url, self.payload(), format="json")
+        self.assertEqual(response.status_code, 200)
+        suggestions = response.data["recommendations"]
+        self.assertGreaterEqual(len(suggestions), 5)
+        combination_keys = [tuple(
+            suggestion[field]["id"] if suggestion[field] else None
+            for field in ("selected_one_piece", "selected_top", "selected_bottom", "selected_outerwear", "selected_accessory")
+        ) for suggestion in suggestions]
+        self.assertEqual(len(combination_keys), len(set(combination_keys)))
+        self.assertTrue(any(
+            suggestion["selected_top"] and suggestion["selected_top"]["id"] == second_top.id
+            for suggestion in suggestions
+        ))
+        self.assertTrue(any(
+            suggestion["selected_bottom"] and suggestion["selected_bottom"]["id"] == second_bottom.id
+            for suggestion in suggestions
+        ))
+        self.assertTrue(any(suggestion["selected_one_piece"]["id"] == dress.id for suggestion in suggestions))
+        saved_ids = set(WardrobeItem.objects.filter(profile=self.profile).values_list("id", flat=True))
+        recommended_ids = {
+            suggestion[field]["id"]
+            for suggestion in suggestions
+            for field in ("selected_one_piece", "selected_top", "selected_bottom", "selected_outerwear", "selected_accessory")
+            if suggestion[field]
+        }
+        self.assertTrue(recommended_ids.issubset(saved_ids))
+
     def test_uses_requested_body_shape_for_guidance(self):
         response = self.client.post(self.url, self.payload(body_shape="Pear"), format="json")
         self.assertEqual(response.status_code, 200)
@@ -74,6 +112,8 @@ class OutfitRecommendationTests(TestCase):
         self.assertFalse(response.data["recommendation_available"])
         self.assertEqual(response.data["missing_items"], ["bottom"])
         self.assertIsNone(response.data["recommendation"])
+        self.assertEqual(response.data["recommendations"], [])
+        self.assertIn("Not enough available items", response.data["message"])
 
     def test_season_is_rejected_because_model_has_no_season_field(self):
         response = self.client.post(self.url, self.payload(season="summer"), format="json")

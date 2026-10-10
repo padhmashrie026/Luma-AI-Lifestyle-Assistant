@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.body_shape.models import Profile
 from apps.diet.models import MealPlan
 from apps.outfits.models import Outfit
-from .models import DailyPlan
+from .models import DailyPlan, DailyTask
 
 
 class CurrentUserProfileDefault:
@@ -62,3 +62,27 @@ class DailyPlanSerializer(serializers.ModelSerializer):
         if meal_plan and plan_date and meal_plan.plan_date != plan_date:
             raise serializers.ValidationError({"meal_plan": "The meal plan and daily plan dates must match."})
         return attrs
+
+
+class DailyTaskSerializer(serializers.ModelSerializer):
+    profile = serializers.PrimaryKeyRelatedField(read_only=True)
+    daily_plan = serializers.PrimaryKeyRelatedField(read_only=True)
+    task_date = serializers.DateField(required=False)
+    duration_minutes = serializers.IntegerField(min_value=1)
+
+    class Meta:
+        model = DailyTask
+        fields = [
+            "id", "profile", "daily_plan", "title", "description", "task_date",
+            "duration_minutes", "is_completed", "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "profile", "daily_plan", "created_at", "updated_at"]
+
+    def validate_title(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("A task title is required.")
+        return value
+
+    def validate_description(self, value):
+        return value.strip()

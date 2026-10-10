@@ -2,6 +2,7 @@ import { apiRequest } from './apiClient.js'
 
 const DAILY_PLAN_PATH = '/lifestyle/daily-plan/'
 const TRACKING_PATH = '/tracking/'
+const TASKS_PATH = '/lifestyle/tasks/'
 
 function queryPath(path, values) {
   const query = new URLSearchParams()
@@ -32,6 +33,22 @@ export function updateDailyPlan(id, plan) {
 
 export function deleteDailyPlan(id) {
   return apiRequest(`${DAILY_PLAN_PATH}${id}/`, { method: 'DELETE' })
+}
+
+export function getDailyTasks(planId) {
+  return apiRequest(`${DAILY_PLAN_PATH}${planId}/tasks/`)
+}
+
+export function createDailyTask(planId, task) {
+  return apiRequest(`${DAILY_PLAN_PATH}${planId}/tasks/`, { method: 'POST', body: JSON.stringify(task) })
+}
+
+export function updateDailyTask(id, task) {
+  return apiRequest(`${TASKS_PATH}${id}/`, { method: 'PATCH', body: JSON.stringify(task) })
+}
+
+export function deleteDailyTask(id) {
+  return apiRequest(`${TASKS_PATH}${id}/`, { method: 'DELETE' })
 }
 
 export function getTrackingRecords(date) {
