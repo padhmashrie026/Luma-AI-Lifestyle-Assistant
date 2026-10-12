@@ -2,7 +2,7 @@
 
 Luma is an MCA mini project that brings everyday lifestyle organization into one web application. Users can manage a personal profile, organize wardrobe and meal information, plan daily routines, track check-ins, and review expense and activity summaries.
 
-The project uses a separate React frontend and Django REST Framework backend. The name describes the project concept; current recommendations and calculations are transparent rule-based features, with no external AI service integration.
+The project keeps React and Django REST Framework as separate codebases, and production serves both from one Render web service and one origin. The name describes the project concept; current recommendations and calculations are transparent rule-based features, with no external AI service integration.
 
 ## Project objectives
 
@@ -37,6 +37,8 @@ Versions below are taken from the project manifests. Version ranges indicate sup
 | Backend framework | Django `>=5.2,<6.0`, Django REST Framework `>=3.16,<4.0` |
 | Cross-origin support | `django-cors-headers >=4.7,<5.0` |
 | Development database | SQLite |
+| Production database | Neon PostgreSQL through `DATABASE_URL` and `psycopg` |
+| Production web server/static files | Gunicorn and WhiteNoise |
 
 The frontend toolchain requires Node.js `^20.19.0` or `>=22.12.0` and npm, according to the package engine requirements.
 
@@ -44,6 +46,7 @@ The frontend toolchain requires Node.js `^20.19.0` or `>=22.12.0` and npm, accor
 
 ```text
 .
+├── build.sh                     # Render build: install, build React, collect Django static files
 ├── backend/
 │   ├── config/                  # Django settings and root URL configuration
 │   ├── apps/
@@ -129,7 +132,35 @@ Build the frontend from the project root:
 npm.cmd --prefix frontend run build
 ```
 
-The production build is written to `frontend/dist/`. The repository does not configure production hosting or deployment.
+The frontend production build is written to `frontend/dist/`. Render's root build script copies these files into Django's static source directory before collecting them.
+
+## Deploy to Render with Neon PostgreSQL
+
+Create one **Render Web Service** for this repository. Leave its Root Directory blank so the root `build.sh` can build both applications. Do not create a separate frontend service: Django serves the built React page, the `/api/` routes, and WhiteNoise static files from the same origin. This keeps the existing Django session cookie and CSRF-token flow on one host.
+
+Use these Render service settings:
+
+| Setting | Value |
+| --- | --- |
+| Runtime | Python 3 |
+| Build Command | `bash build.sh` |
+| Start Command | `cd backend && python manage.py migrate && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT` |
+
+Add these environment variables in the Render service dashboard:
+
+| Variable | Value |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | A newly generated, private Django secret key |
+| `DEBUG` | `false` |
+| `DATABASE_URL` | The Neon PostgreSQL connection string, stored only in Render's environment settings |
+| `ALLOWED_HOSTS` | Optional comma-separated extra hostnames; Render's `RENDER_EXTERNAL_HOSTNAME` is added automatically |
+| `CSRF_TRUSTED_ORIGINS` | Optional comma-separated HTTPS origins; Render's service origin is added automatically |
+
+In Neon, create a database and copy its connection string into Render's `DATABASE_URL` setting. The Django configuration requires SSL for PostgreSQL connections. Keep the secret and database URL out of Git and frontend `VITE_*` variables. Render terminates HTTPS and supplies its hostname; Django trusts the forwarded HTTPS header and uses secure session and CSRF cookies when `DEBUG=false`.
+
+The live Neon database starts separately from the local SQLite database at `backend/db.sqlite3`. Deploy-time migrations create the live schema, but they do not copy your local development records. If you need sample or real records online, add them to the cloud database deliberately after deployment.
+
+The frontend continues to call the relative `/api` path. Vite's development server still proxies `/api` to local Django; production assets are built under `/static/` and served by WhiteNoise from the same Render service.
 
 ## Authentication and personal-data ownership
 
@@ -145,5 +176,5 @@ The body-shape calculation endpoint accepts measurement values without requiring
 - Expense tools organize records and budget categories; they do not provide professional financial advice.
 - Outfit recommendations are returned as suggestions and are not saved automatically.
 - Insights summarizes implemented record counts, expenses, and tracking; it is not a predictive analytics system.
-- SQLite, `DEBUG = True`, local CORS/CSRF origins, and the development secret-key setting are for local development. No production deployment configuration is included.
+- Local development uses SQLite and a development-only secret-key fallback. Production requires `DJANGO_SECRET_KEY`, sets `DEBUG=false`, and uses Neon PostgreSQL when `DATABASE_URL` is configured.
 - The frontend package defines a production build script but no automated frontend test script. Backend tests use Django's test runner.

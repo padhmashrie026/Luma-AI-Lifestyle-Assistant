@@ -16,6 +16,10 @@ env/
 
 # Django and local databases
 backend/db.sqlite3
+*.sqlite3
+*.sqlite3-journal
+backend/static_src/*
+!backend/static_src/.gitkeep
 media/
 staticfiles/
 

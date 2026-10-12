@@ -5,6 +5,9 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     plugins: [react()],
+    // Built assets are collected and served by Django/WhiteNoise on /static/.
+    // Vite's dev server continues to serve source assets from /.
+    base: mode === 'production' ? '/static/' : '/',
     server: {
       proxy: {
         '/api': {
