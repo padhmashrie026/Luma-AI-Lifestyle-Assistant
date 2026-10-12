@@ -13,7 +13,7 @@ urlpatterns = [
     path("api/lifestyle/", include("apps.lifestyle.urls")),
     path("api/tracking/", include("apps.tracking.urls")),
     path("api/insights/", include("apps.insights.urls")),
-    # The built React app is copied into static_src during the Render build.
+    # The build places the React index in templates/ and its assets in static_src/.
     # Keep this last and exclude backend/static paths from the SPA fallback.
     re_path(
         r"^(?!api(?:/|$)|admin(?:/|$)|static(?:/|$)).*$",

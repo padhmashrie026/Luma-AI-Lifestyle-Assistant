@@ -124,7 +124,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static_src"]
-TEMPLATES[0]["DIRS"] = [BASE_DIR / "static_src", BASE_DIR / "templates"]
+TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {

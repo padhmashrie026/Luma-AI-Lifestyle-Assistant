@@ -65,3 +65,16 @@ class DeploymentConfigurationTests(SimpleTestCase):
         for url in ("/api/not-a-real-route/", "/static/not-a-real-file.js"):
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 404)
+
+    def test_real_api_and_admin_routes_do_not_fall_back_to_react(self):
+        api_response = self.client.get("/api/auth/csrf/")
+        self.assertEqual(api_response.status_code, 200)
+        self.assertNotContains(api_response, 'id="root"')
+
+        admin_response = self.client.get("/admin/")
+        self.assertEqual(admin_response.status_code, 302)
+        self.assertEqual(admin_response.headers["Location"], "/admin/login/?next=/admin/")
+
+        admin_login_response = self.client.get("/admin/login/")
+        self.assertEqual(admin_login_response.status_code, 200)
+        self.assertNotContains(admin_login_response, 'id="root"')

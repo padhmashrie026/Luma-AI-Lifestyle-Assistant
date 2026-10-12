@@ -9,5 +9,6 @@ npm --prefix frontend run build
 
 mkdir -p backend/static_src
 cp -R frontend/dist/. backend/static_src/
+cp frontend/dist/index.html backend/templates/index.html
 
 python backend/manage.py collectstatic --noinput
